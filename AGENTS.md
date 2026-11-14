@@ -35,3 +35,4 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Reglas de código
 
 - Usar código limpio: nombres, funciones, variables, etc. en inglés.
+- Eliminar componentes antiguos ya no usados y que no alteres el comportamiento de la aplicacion.
