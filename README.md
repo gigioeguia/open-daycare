@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OpenDayCare
 
-## Getting Started
+OpenDayCare es una app web (Next.js App Router) para la comunicación de una sala de guardería. El home (`/`) implementa el feed de **Sala Lunas** basado en la plantilla de referencia `references/pantallas/feed.dc.html`, con datos ficticios y UI estática.
 
-First, run the development server:
+## Estado actual
+
+- **SPEC 01 — Home feed (Sala Lunas):** Implementado (`specs/01-feed-home.md`).
+  - Ruta `/` con feed de sala (encabezado, composer, separador "PUBLICADO HOY" y 3 publicaciones).
+  - Layout responsivo: sidebar fija en escritorio (`248px`) y top bar + drawer en móvil.
+  - Tipografías `Fredoka`/`Nunito`, tema claro fijo (`#F6ECDF`), sin autenticación, base de datos ni navegación real.
+
+## Stack
+
+- Next.js `16.4.6` (App Router) + React `19.3.0`
+- TypeScript (strict)
+- Tailwind CSS `4.3.3`
+- ESLint (`eslint-config-next`)
+
+## Estructura principal
+
+- `app/layout.tsx` — layout raíz, metadata y fuentes.
+- `app/page.tsx` — home (feed).
+- `app/globals.css` — estilos globales/base visual.
+- `app/components/feed/` — componentes del feed, íconos (`icons/`) y datos (`feed-data.ts`).
+- `references/pantallas/` — plantillas/mockups de referencia.
+- `specs/` — especificaciones del producto.
+
+## Desarrollo
+
+Requisitos: Node.js y npm.
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abrir [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Comandos
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `npm run dev` — servidor de desarrollo.
+- `npm run build` — build de producción.
+- `npm run start` — servir build de producción.
+- `npm run lint` — ejecutar ESLint.
+- `npx tsc --noEmit` — typecheck.
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+> No hay suite de tests automatizados configurada actualmente.
