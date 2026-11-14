@@ -1,15 +1,27 @@
-import type { FeedUser } from "./feed-data";
 import { Avatar } from "./Avatar";
 import { LogoutIcon } from "./icons/LogoutIcon";
 
+export type ShellUser = {
+  name: string;
+  role: string;
+  initial: string;
+  avatarBackgroundColor?: string;
+  avatarColor?: string;
+};
+
 type UserBadgeProps = {
-  user: FeedUser;
+  user: ShellUser;
 };
 
 export function UserBadge({ user }: UserBadgeProps) {
   return (
     <div className="flex items-center gap-[11px] px-2 py-[6px]">
-      <Avatar initial={user.initial} size={38} backgroundColor="#F2937A" color="#FFFFFF" />
+      <Avatar
+        initial={user.initial}
+        size={38}
+        backgroundColor={user.avatarBackgroundColor ?? "#F2937A"}
+        color={user.avatarColor ?? "#FFFFFF"}
+      />
       <div className="min-w-0 flex-1">
         <div className="text-[14px] font-extrabold text-[#3F362E]">{user.name}</div>
         <div className="text-[12px] text-[#A89A8B]">{user.role}</div>
