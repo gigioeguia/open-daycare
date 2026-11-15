@@ -19,26 +19,34 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Project facts
 - Next.js `16.4.6` App Router (`app/`) with React `19.3.0`, TypeScript strict, Tailwind CSS `4.3.3`.
 - Entrypoints: `app/layout.tsx` (root layout/metadata, Fredoka/Nunito fonts) and `app/page.tsx` (home `/` feed). Global styles: `app/globals.css` (`@import "tailwindcss"`).
-- UI actual: feed estático de **Sala Lunas** basado en `references/pantallas/`, con datos ficticios en `app/components/feed/feed-data.ts` y componentes en `app/components/feed/` (sin auth, DB, ni navegación real).
+- UI actual (estática, con datos ficticios; sin auth real ni integración DB en app): 
+  - `/` — feed de sala (componentes en `app/components/feed/`, datos en `feed-data.ts`).
+  - `/login` — pantalla de acceso (`app/components/auth/`).
+  - `/activar-cuenta` — pantalla de activación de cuenta (`app/components/auth/`).
+  - `/kids` y `/kids/[id]` — listado y detalle de niños (`app/components/kids/`, `app/components/shell/`).
 - Path alias: `@/*` → repo root (`tsconfig.json`).
 - `next.config.ts`: `cacheComponents`, `partialPrefetching`, `experimental.agentFeedback`, y `turbopack.rules` para `*.css` con `@tailwindcss/turbopack`.
 - `eslint.config.mjs`: presets `eslint-config-next` (core-web-vitals + TypeScript) e ignores adicionales para `references/**`.
-- Especificaciones funcionales/UI en `specs/` (`01-feed-home.md` a `06-modal-nueva-publicacion.md`, `.spec-config.yml`).
+- Especificaciones funcionales/UI en `specs/` (`01-feed-home.md` a `07-core-db-foundation-migrations.md`, `.spec-config.yml`).
 
 ## Structure (high level)
-- `app/` — rutas App Router, layout, página y componentes de UI (`app/components/feed/`).
+- `app/` — rutas App Router y UI.
+  - `app/page.tsx`, `app/login/page.tsx`, `app/activar-cuenta/page.tsx`, `app/kids/page.tsx`, `app/kids/[id]/page.tsx`.
+  - `app/components/feed/`, `app/components/auth/`, `app/components/kids/`, `app/components/shell/` — componentes y datos de UI.
 - `references/pantallas/`, `references/screenshots/` — mockups/plantillas de referencia visual (si existen).
 - `specs/` — especificaciones y configuración del flujo spec-driven.
+- `supabase/migrations/` — migraciones SQL versionadas (p. ej. fundación core).
+- `.github/workflows/` — workflows de CI/automatización (p. ej. `opencode.yml`).
 - `public/` — assets estáticos.
 - `,env`, `,env.template` — variables de entorno locales/plantilla (nombres con coma según repo actual).
 - `skills-lock.json` — lock de skills instaladas.
 - `.playwright/`, `.playwright-mcp/`, `playwright/` — artefactos/sesiones de Playwright (no usar como destino principal para capturas nuevas salvo contexto explícito).
 
 ## Supabase & database
-- **Estado:** integración Supabase/PostgreSQL **planificada/no implementada** en código (no hay dependencias de Supabase ni cliente configurado en `package.json`).
-- **Schema de referencia (externo):** `docs` reference → `/datos/openCode/07-DB-Schema` (`opendaycare-database-schema.md`). Define tablas/enums para PostgreSQL/Supabase (p. ej. `daycares`, `users` vinculado a `auth.users`, `rooms`, `children`, `parent_children`, `invitations`, posts, etc.). Tratar como diseño objetivo; puede no estar aplicado en BD.
+- **Estado:** base de migraciones iniciada en `supabase/migrations/` (ej. `20261115202917_create_core_foundation.sql`: enums/tablas core y trigger de bootstrap de perfil auth), pero **sin integración Supabase en la app** (no hay dependencias/cliente/config en `package.json`) y sin garantía de que la migración esté aplicada en un proyecto remoto/local.
+- **Schema de referencia (externo):** `docs` reference → `/datos/openCode/07-DB-Schema` (`opendaycare-database-schema.md`). Define tablas/enums para PostgreSQL/Supabase (p. ej. `daycares`, `users` vinculado a `auth.users`, `rooms`, `children`, `parent_children`, `invitations`, posts, etc.). Tratar como diseño objetivo; mantener alineación entre doc, migraciones y app.
 - **Convenciones del schema:** PK `uuid`, `created_at`/`updated_at` `timestamptz`, valores persistidos en inglés, etiquetas de UI en español en la capa de presentación.
-- **Entorno:** `,env.template` incluye `SUPBASE_DB_PASSWORD` (placeholder). Al implementar, validar nombres reales de variables requeridas por Supabase/Next.js (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, etc.) y no exponer secretos.
+- **Entorno:** `,env.template` incluye `SUPBASE_DB_PASSWORD` (placeholder, nombre según repo actual). Al implementar, validar nombres reales de variables requeridas por Supabase/Next.js (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, etc.) y no exponer secretos.
 - **MCP/skills disponibles para tareas Supabase:** usar el server `supabase` en Code Mode (`tools.supabase.*`) y cargar skills `supabase` y/o `supabase-postgres-best-practices` antes de trabajar con DB, Auth, Storage, RLS, migraciones, Edge Functions, tipos, logs o performance Postgres.
 
 ## References & tooling
