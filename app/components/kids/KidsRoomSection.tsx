@@ -14,14 +14,14 @@ export function KidsRoomSection({
 }: KidsRoomSectionProps) {
   return (
     <section>
-      <div className="mb-[14px] flex items-center gap-3">
+      <div className="mb-3.5 flex items-center gap-3">
         <span className="text-[12.5px] font-extrabold tracking-[0.8px] text-[#3F362E]">
           {roomGroupLabel}
         </span>
         <span className="text-[13px] text-[#A89A8B]">{roomGroupCountLabel}</span>
         <span className="h-px flex-1 bg-[#E7DAC8]" />
       </div>
-      <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
         {kids.map((kid) => (
           <KidCard key={kid.id} kid={kid} />
         ))}

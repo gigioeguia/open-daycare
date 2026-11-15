@@ -11,10 +11,10 @@ export function AuthTextField({ field }: AuthTextFieldProps) {
       : "border-[#EADFD0]";
 
   const inputClassName = [
-    "w-full rounded-[14px] border-[1.5px] bg-white px-4 py-[14px] text-[15px] text-[#3F362E] placeholder:text-[#B6A99B] focus:outline-none",
+    "w-full rounded-[14px] border-[1.5px] bg-white px-4 py-3.5 text-[15px] text-[#3F362E] placeholder:text-[#B6A99B] focus:outline-none",
     borderClass,
     field.letterSpacing
-      ? "font-[family-name:var(--font-fredoka)] text-[18px] font-bold tracking-[3px]"
+      ? "font-(family-name:--font-fredoka) text-[18px] font-bold tracking-[3px]"
       : "",
   ]
     .filter(Boolean)

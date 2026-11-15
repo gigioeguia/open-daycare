@@ -15,7 +15,7 @@ export function Avatar({
 }: AvatarProps) {
   return (
     <div
-      className={`flex flex-none items-center justify-center rounded-full font-[family-name:var(--font-fredoka)] font-semibold ${className}`}
+      className={`flex flex-none items-center justify-center rounded-full font-(family-name:--font-fredoka) font-semibold ${className}`}
       style={{
         width: size,
         height: size,

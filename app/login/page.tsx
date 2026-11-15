@@ -19,7 +19,7 @@ export default function LoginPage() {
             contextLabel={data.brandPanel.contextLabel}
           />
 
-          <h2 className="m-0 mb-[6px] font-[family-name:var(--font-fredoka)] text-[30px] font-semibold text-[#3F362E]">
+          <h2 className="m-0 mb-[6px] font-(family-name:--font-fredoka) text-[30px] font-semibold text-[#3F362E]">
             {data.title}
           </h2>
           <p className="m-0 mb-7 text-[15px] text-[#94887B]">{data.subtitle}</p>
@@ -29,7 +29,7 @@ export default function LoginPage() {
             <AuthTextField field={data.passwordField} />
           </div>
 
-          <div className="mb-5 mt-[10px] text-right">
+          <div className="mb-5 mt-2.5 text-right">
             <Link
               href={data.forgotPasswordHref}
               className="text-[13.5px] font-bold text-[#C5503A]"

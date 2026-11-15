@@ -7,7 +7,7 @@ type KidAllergyNoticeProps = {
 
 export function KidAllergyNotice({ title, note }: KidAllergyNoticeProps) {
   return (
-    <div className="flex gap-[14px] rounded-[16px] bg-[#FBDAD6] p-[16px_18px]">
+    <div className="flex gap-3.5 rounded-2xl bg-[#FBDAD6] p-[16px_18px]">
       <div className="flex h-10 w-10 flex-none items-center justify-center rounded-[11px] bg-[#F4A8A0]">
         <WarningIcon />
       </div>

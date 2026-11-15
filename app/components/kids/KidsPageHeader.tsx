@@ -24,14 +24,14 @@ export function KidsPageHeader({
           <div className="mb-1 text-[12.5px] font-extrabold tracking-[0.8px] text-[#D9583C]">
             {sectionLabel}
           </div>
-          <h1 className="m-0 font-[family-name:var(--font-fredoka)] text-[30px] font-semibold text-[#3F362E]">
+          <h1 className="m-0 font-(family-name:--font-fredoka) text-[30px] font-semibold text-[#3F362E]">
             {title}
           </h1>
         </div>
         <button
           type="button"
           onClick={() => setIsAddChildModalOpen(true)}
-          className="flex items-center gap-2 rounded-[14px] bg-[linear-gradient(180deg,#F4977E,#EE8164)] px-[18px] py-[11px] text-[14.5px] font-extrabold text-white shadow-[0_8px_18px_-8px_rgba(238,129,100,0.7)]"
+          className="flex items-center gap-2 rounded-[14px] bg-[linear-gradient(180deg,#F4977E,#EE8164)] px-4.5 py-[11px] text-[14.5px] font-extrabold text-white shadow-[0_8px_18px_-8px_rgba(238,129,100,0.7)]"
         >
           <PlusIcon />
           {addChildLabel}

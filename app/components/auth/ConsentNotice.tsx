@@ -7,7 +7,7 @@ type ConsentNoticeProps = {
 
 export function ConsentNotice({ data }: ConsentNoticeProps) {
   return (
-    <div className="mb-6 flex items-start gap-3 rounded-[14px] bg-[#FBF1D6] p-[14px_16px]">
+    <div className="mb-6 flex items-start gap-3 rounded-[14px] bg-[#FBF1D6] px-4 py-3.5">
       <span
         className="mt-px flex h-6 w-6 flex-none items-center justify-center rounded-lg bg-[#5FB97E] text-white"
         aria-hidden="true"
