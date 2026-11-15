@@ -43,3 +43,5 @@ next-env.d.ts
 .playwright/*
 .references/*
 .playwright-mcp/*
+,env
+!,env.template

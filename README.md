@@ -7,7 +7,9 @@ OpenDayCare es una app web (Next.js App Router) para la comunicación de una sal
 - **SPEC 01 — Home feed (Sala Lunas):** Implementado (`specs/01-feed-home.md`).
   - Ruta `/` con feed de sala (encabezado, composer, separador "PUBLICADO HOY" y 3 publicaciones).
   - Layout responsivo: sidebar fija en escritorio (`248px`) y top bar + drawer en móvil.
-  - Tipografías `Fredoka`/`Nunito`, tema claro fijo (`#F6ECDF`), sin autenticación, base de datos ni navegación real.
+  - Tipografías `Fredoka`/`Nunito`, tema claro fijo (`#F6ECDF`), sin autenticación, navegación real ni base de datos integrada aún.
+
+- **Supabase / Base de datos:** No integrado en el código (sin cliente/config en `package.json`). Existe schema de referencia externo en `docs` (`/datos/openCode/07-DB-Schema/opendaycare-database-schema.md`) para un futuro modelo PostgreSQL/Supabase.
 
 ## Stack
 

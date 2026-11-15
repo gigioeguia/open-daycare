@@ -155,7 +155,7 @@ export function CreatePostModal({ open, onClose }: CreatePostModalProps) {
             <span className={sectionLabelClassName}>
               {createPostFormLabels.audience}
             </span>
-            <div className="flex flex-wrap gap-[9px]" role="group" aria-label="Destinatarios">
+            <div className="flex flex-wrap gap-2.25" role="group" aria-label="Destinatarios">
               {audienceOptions.map((option) => {
                 const isSelected = values.audienceIds.includes(option.id);
                 const baseClassName =
@@ -210,7 +210,7 @@ export function CreatePostModal({ open, onClose }: CreatePostModalProps) {
             <span className={sectionLabelClassName}>
               {createPostFormLabels.type}
             </span>
-            <div className="flex flex-wrap gap-[9px]" role="group" aria-label="Tipo de publicación">
+            <div className="flex flex-wrap gap-2.25" role="group" aria-label="Tipo de publicación">
               {postTypeOptions.map((option) => {
                 const isSelected = values.typeId === option.id;
                 return (
