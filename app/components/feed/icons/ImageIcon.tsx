@@ -1,12 +1,13 @@
 type IconProps = {
   className?: string;
+  size?: number;
 };
 
-export function ImageIcon({ className }: IconProps) {
+export function ImageIcon({ className, size = 30 }: IconProps) {
   return (
     <svg
-      width="30"
-      height="30"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"

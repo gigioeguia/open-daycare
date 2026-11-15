@@ -18,6 +18,7 @@ type SidebarProps = {
   brandHref?: string;
   newPostLabel?: string;
   newPostHref?: string;
+  onNewPostClick?: () => void;
   navItems: ShellNavItem[];
   user: ShellUser;
   className?: string;
@@ -28,10 +29,13 @@ export function Sidebar({
   brandHref = "#",
   newPostLabel = "Nueva publicación",
   newPostHref = "#",
+  onNewPostClick,
   navItems,
   user,
   className = "",
 }: SidebarProps) {
+  const newPostClassName =
+    "mb-4.5 flex w-full items-center justify-center gap-2 rounded-[14px] bg-[linear-gradient(180deg,#F4977E,#EE8164)] px-3 py-3 text-[14.5px] font-extrabold text-white shadow-[0_8px_18px_-8px_rgba(238,129,100,0.75)]";
   return (
     <aside
       className={`flex h-screen w-[248px] flex-none flex-col border-r border-[#ECE0D0] bg-[#FFFDF9] px-4 py-6 ${className}`}
@@ -51,13 +55,21 @@ export function Sidebar({
         </div>
       </Link>
 
-      <a
-        href={newPostHref}
-        className="mb-4.5 flex w-full items-center justify-center gap-2 rounded-[14px] bg-[linear-gradient(180deg,#F4977E,#EE8164)] px-3 py-3 text-[14.5px] font-extrabold text-white shadow-[0_8px_18px_-8px_rgba(238,129,100,0.75)]"
-      >
-        <PlusIcon />
-        {newPostLabel}
-      </a>
+      {onNewPostClick ? (
+        <button
+          type="button"
+          onClick={onNewPostClick}
+          className={newPostClassName}
+        >
+          <PlusIcon />
+          {newPostLabel}
+        </button>
+      ) : (
+        <a href={newPostHref} className={newPostClassName}>
+          <PlusIcon />
+          {newPostLabel}
+        </a>
+      )}
 
       <nav className="flex flex-1 flex-col gap-1">
         {navItems.map((item) => (

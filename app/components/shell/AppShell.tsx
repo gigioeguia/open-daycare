@@ -11,6 +11,7 @@ type AppShellProps = {
   brandHref?: string;
   newPostLabel?: string;
   newPostHref?: string;
+  onNewPostClick?: () => void;
   navItems: ShellNavItem[];
   user: ShellUser;
   children: ReactNode;
@@ -23,6 +24,7 @@ export function AppShell({
   brandHref,
   newPostLabel,
   newPostHref,
+  onNewPostClick,
   navItems,
   user,
   children,
@@ -38,6 +40,7 @@ export function AppShell({
         brandHref={brandHref}
         newPostLabel={newPostLabel}
         newPostHref={newPostHref}
+        onNewPostClick={onNewPostClick}
         navItems={navItems}
         user={user}
         className="sticky top-0 hidden h-screen lg:flex"
@@ -70,6 +73,7 @@ export function AppShell({
                 brandHref={brandHref}
                 newPostLabel={newPostLabel}
                 newPostHref={newPostHref}
+                onNewPostClick={onNewPostClick}
                 navItems={navItems}
                 user={user}
                 className="h-auto min-h-0 flex-1 border-r-0"
