@@ -19,7 +19,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Project facts
 - Next.js `16.4.6` App Router (`app/`) with React `19.3.0`, TypeScript strict, Tailwind CSS `4.3.3`.
 - Entrypoints: `app/layout.tsx` (root layout/metadata, Fredoka/Nunito fonts) and `app/page.tsx` (home `/` feed). Global styles: `app/globals.css` (`@import "tailwindcss"`).
-- UI actual (estática, con datos ficticios; sin auth real ni integración DB en app): 
+- UI actual (feed con datos ficticios + integración parcial Supabase DB en `/`): 
   - `/` — feed de sala (componentes en `app/components/feed/`, datos en `feed-data.ts`).
   - `/login` — pantalla de acceso (`app/components/auth/`).
   - `/activar-cuenta` — pantalla de activación de cuenta (`app/components/auth/`).
@@ -43,10 +43,16 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - `.playwright/`, `.playwright-mcp/`, `playwright/` — artefactos/sesiones de Playwright (no usar como destino principal para capturas nuevas salvo contexto explícito).
 
 ## Supabase & database
-- **Estado:** base de migraciones iniciada en `supabase/migrations/` (ej. `20261115202917_create_core_foundation.sql`: enums/tablas core y trigger de bootstrap de perfil auth), pero **sin integración Supabase en la app** (no hay dependencias/cliente/config en `package.json`) y sin garantía de que la migración esté aplicada en un proyecto remoto/local.
+- **Estado:** migraciones iniciadas en `supabase/migrations/` (ej. `20261115202917_create_core_foundation.sql`: enums/tablas core y trigger de bootstrap de perfil auth). **La app ya tiene integración Supabase vía paquetes propios** en `utils/supabase/` (cliente de servidor para RSC y cliente de navegador para componentes/clientes).
+- **Utilidades creadas (usar estas en vez de instanciar clientes directamente):**
+  - `utils/supabase/server.ts` — `createClient(cookieStore)` para Server Components / Server Actions. Usa `createServerClient` de `@supabase/ssr` con `cookies.getAll()`/`setAll`; `setAll` está protegido con try/catch porque en Server Components no siempre puede escribir cookies.
+  - `utils/supabase/client.ts` — `createClient()` para componentes de cliente/navegador. Usa `createBrowserClient` de `@supabase/ssr`.
+  - `utils/supabase/middleware.ts` — `createClient()` para middleware (misma firma que client.ts; revisar si se requiere cliente de servidor con `request.cookies` según el flujo de sesión).
+- **Variables de entorno requeridas:** `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (definidas en `,env.template` / `,env`). No exponer `SUPABASE_DB_PASSWORD` ni service role key en el cliente.
+- **Next.js 16 App Router + `cookies()`:** acceder a `cookies()`/`headers()` durante prerenderizado estático bloquea la página a menos que se envuelva en `<Suspense>` o se use `export const dynamic = "force-dynamic"` (incompatible con `nextConfig.cacheComponents`, ver `next.config.ts`). Preferir `<Suspense fallback={...}>` alrededor del acceso dinámico.
 - **Schema de referencia (externo):** `docs` reference → `/datos/openCode/07-DB-Schema` (`opendaycare-database-schema.md`). Define tablas/enums para PostgreSQL/Supabase (p. ej. `daycares`, `users` vinculado a `auth.users`, `rooms`, `children`, `parent_children`, `invitations`, posts, etc.). Tratar como diseño objetivo; mantener alineación entre doc, migraciones y app.
 - **Convenciones del schema:** PK `uuid`, `created_at`/`updated_at` `timestamptz`, valores persistidos en inglés, etiquetas de UI en español en la capa de presentación.
-- **Entorno:** `,env.template` incluye `SUPBASE_DB_PASSWORD` (placeholder, nombre según repo actual). Al implementar, validar nombres reales de variables requeridas por Supabase/Next.js (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, etc.) y no exponer secretos.
+- **Entorno:** `,env.template` incluye `SUPBASE_DB_PASSWORD` (placeholder, nombre según repo actual). Al implementar, validar nombres reales de variables requeridas por Supabase/Next.js y no exponer secretos.
 - **MCP/skills disponibles para tareas Supabase:** usar el server `supabase` en Code Mode (`tools.supabase.*`) y cargar skills `supabase` y/o `supabase-postgres-best-practices` antes de trabajar con DB, Auth, Storage, RLS, migraciones, Edge Functions, tipos, logs o performance Postgres.
 
 ## References & tooling
