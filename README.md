@@ -1,15 +1,16 @@
 # OpenDayCare
 
-OpenDayCare es una app web (Next.js App Router) para la comunicación de una sala de guardería. El home (`/`) implementa el feed de **Sala Lunas** basado en la plantilla de referencia `references/pantallas/feed.dc.html`, con datos ficticios y UI estática.
+OpenDayCare es una app web (Next.js App Router) para la comunicación y gestión diaria de una sala de guardería. Actualmente implementa pantallas UI con datos ficticios, guiadas por especificaciones en `specs/` y referencias visuales en `references/`.
 
 ## Estado actual
 
-- **SPEC 01 — Home feed (Sala Lunas):** Implementado (`specs/01-feed-home.md`).
-  - Ruta `/` con feed de sala (encabezado, composer, separador "PUBLICADO HOY" y 3 publicaciones).
-  - Layout responsivo: sidebar fija en escritorio (`248px`) y top bar + drawer en móvil.
-  - Tipografías `Fredoka`/`Nunito`, tema claro fijo (`#F6ECDF`), sin autenticación, navegación real ni base de datos integrada aún.
-
-- **Supabase / Base de datos:** No integrado en el código (sin cliente/config en `package.json`). Existe schema de referencia externo en `docs` (`/datos/openCode/07-DB-Schema/opendaycare-database-schema.md`) para un futuro modelo PostgreSQL/Supabase.
+- **UI implementada (estática, sin backend/auth real):**
+  - `/` — Feed de sala (SPEC 01, `specs/01-feed-home.md`): encabezado, composer, separador y publicaciones con datos ficticios.
+  - `/login` y `/activar-cuenta` — Pantallas de acceso y activación (SPEC 03, `specs/03-auth-login-activation-ui.md`).
+  - `/kids` y `/kids/[id]` — Listado y detalle de niños (SPEC 02, `specs/02-kids-screens-ui.md`).
+- **Specs disponibles:** `01-feed-home.md` a `07-core-db-foundation-migrations.md` en `specs/` (incluye specs de modales y fundación de DB).
+- **Supabase / Base de datos:** existe migración inicial en `supabase/migrations/20261115202917_create_core_foundation.sql` (enums/tablas core y bootstrap de perfil auth), pero **no hay integración de Supabase en la app** (sin dependencias/cliente/config en `package.json`). Hay schema de referencia externo en `docs` (`/datos/openCode/07-DB-Schema/opendaycare-database-schema.md`).
+- **Automatización:** workflow en `.github/workflows/opencode.yml`.
 
 ## Stack
 
@@ -20,12 +21,15 @@ OpenDayCare es una app web (Next.js App Router) para la comunicación de una sal
 
 ## Estructura principal
 
-- `app/layout.tsx` — layout raíz, metadata y fuentes.
-- `app/page.tsx` — home (feed).
+- `app/layout.tsx` — layout raíz, metadata y fuentes (`Fredoka`/`Nunito`).
+- `app/page.tsx` — home/feed.
+- `app/login/page.tsx`, `app/activar-cuenta/page.tsx` — pantallas de autenticación/activación (UI).
+- `app/kids/page.tsx`, `app/kids/[id]/page.tsx` — pantallas de niños.
+- `app/components/` — componentes UI (`feed/`, `auth/`, `kids/`, `shell/`).
 - `app/globals.css` — estilos globales/base visual.
-- `app/components/feed/` — componentes del feed, íconos (`icons/`) y datos (`feed-data.ts`).
-- `references/pantallas/` — plantillas/mockups de referencia.
-- `specs/` — especificaciones del producto.
+- `specs/` — especificaciones del producto y configuración spec-driven.
+- `supabase/migrations/` — migraciones SQL versionadas.
+- `references/` — plantillas/mockups y capturas de referencia.
 
 ## Desarrollo
 
@@ -46,4 +50,9 @@ Abrir [http://localhost:3000](http://localhost:3000).
 - `npm run lint` — ejecutar ESLint.
 - `npx tsc --noEmit` — typecheck.
 
-> No hay suite de tests automatizados configurada actualmente.
+## Notas
+
+- No hay suite de tests automatizados configurada actualmente.
+- Variables de entorno locales: el repo incluye `,env` y `,env.template` (nombres con coma). `,env.template` contiene placeholders; no commitear secretos reales.
+- El schema/diseño objetivo de base de datos debe mantenerse alineado con `docs/opendaycare-database-schema.md`, `supabase/migrations/` y las specs correspondientes.
+- Para cambios guiados, ver `specs/.spec-config.yml` y `AGENTS.md` (flujo `/spec` y `/spec-impl`, convenciones y tooling del proyecto).

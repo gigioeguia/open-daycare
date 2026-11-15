@@ -1,1 +1,17 @@
 SUPBASE_DB_PASSWORD=XXXXXXXXXXXxx
+
+# Supabase project (required for supabase/seed/create-test-users.mjs)
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+
+# SPEC 08 - Test users (placeholders, no real secrets)
+TEST_DAYCARE_NAME="Guardería OpenDayCare (Pruebas)"
+TEST_ADMIN_EMAIL="admin.pruebas@opendaycare.test"
+TEST_ADMIN_PASSWORD=""
+TEST_ADMIN_FULL_NAME="Admin Pruebas"
+TEST_STAFF1_EMAIL="staff1.pruebas@opendaycare.test"
+TEST_STAFF1_PASSWORD=""
+TEST_STAFF1_FULL_NAME="Staff Pruebas 1"
+TEST_STAFF2_EMAIL="staff2.pruebas@opendaycare.test"
+TEST_STAFF2_PASSWORD=""
+TEST_STAFF2_FULL_NAME="Staff Pruebas 2"
