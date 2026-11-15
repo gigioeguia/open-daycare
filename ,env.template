@@ -4,6 +4,10 @@ SUPBASE_DB_PASSWORD=XXXXXXXXXXXxx
 SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
 
+NEXT_PUBLIC_SUPABASE_URL=https://ixhfvteeyzmwspyhupti.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=XXXXXXXXXXXXXXXXXXXXXXXX
+
+
 # SPEC 08 - Test users (placeholders, no real secrets)
 TEST_DAYCARE_NAME="Guardería OpenDayCare (Pruebas)"
 TEST_ADMIN_EMAIL="admin.pruebas@opendaycare.test"
