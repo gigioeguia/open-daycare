@@ -1,5 +1,9 @@
+"use client";
+
+import { useState } from "react";
 import type { FeedPageData, NavItem } from "./feed-data";
 import { ComposerPrompt } from "./ComposerPrompt";
+import { CreatePostModal } from "./CreatePostModal";
 import { DaySection } from "./DaySection";
 import { FeedHeader } from "./FeedHeader";
 import { PostCard } from "./PostCard";
@@ -41,6 +45,8 @@ function getFeedNavHref(id: NavItem["id"]) {
 }
 
 export function FeedShell({ data }: FeedShellProps) {
+  const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState(false);
+
   const navItems: ShellNavItem[] = data.navItems.map((item) => ({
     id: item.id,
     label: item.label,
@@ -54,6 +60,7 @@ export function FeedShell({ data }: FeedShellProps) {
       roomLabel="Sala Lunas"
       brandHref="/"
       navItems={navItems}
+      onNewPostClick={() => setIsCreatePostModalOpen(true)}
       user={{
         name: data.user.name,
         role: data.user.role,
@@ -68,13 +75,20 @@ export function FeedShell({ data }: FeedShellProps) {
         greeting={data.greeting}
         meta={data.meta}
       />
-      <ComposerPrompt userInitial={data.user.initial} prompt={data.composerPrompt} />
+      <ComposerPrompt
+        userInitial={data.user.initial}
+        prompt={data.composerPrompt}
+      />
       <DaySection label={data.dayLabel} />
       <div className="flex flex-col gap-4">
         {data.posts.map((post) => (
           <PostCard key={post.id} post={post} />
         ))}
       </div>
+      <CreatePostModal
+        open={isCreatePostModalOpen}
+        onClose={() => setIsCreatePostModalOpen(false)}
+      />
     </AppShell>
   );
 }
