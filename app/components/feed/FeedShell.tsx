@@ -9,6 +9,7 @@ import { FeedHeader } from "./FeedHeader";
 import { PostCard } from "./PostCard";
 import { AppShell } from "../shell/AppShell";
 import type { ShellNavItem } from "../shell/Sidebar";
+import type { ShellUser } from "../shell/UserBadge";
 import { BellIcon } from "../shell/icons/BellIcon";
 import { ChildrenIcon } from "../shell/icons/ChildrenIcon";
 import { HomeIcon } from "../shell/icons/HomeIcon";
@@ -16,6 +17,7 @@ import { UserIcon } from "../shell/icons/UserIcon";
 
 type FeedShellProps = {
   data: FeedPageData;
+  user?: ShellUser;
 };
 
 function getFeedNavIcon(id: NavItem["id"]) {
@@ -44,7 +46,7 @@ function getFeedNavHref(id: NavItem["id"]) {
   }
 }
 
-export function FeedShell({ data }: FeedShellProps) {
+export function FeedShell({ data, user }: FeedShellProps) {
   const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState(false);
 
   const navItems: ShellNavItem[] = data.navItems.map((item) => ({
@@ -55,19 +57,21 @@ export function FeedShell({ data }: FeedShellProps) {
     icon: getFeedNavIcon(item.id),
   }));
 
+  const shellUser: ShellUser = user ?? {
+    name: data.user.name,
+    role: data.user.role,
+    initial: data.user.initial,
+    avatarBackgroundColor: "#F2937A",
+    avatarColor: "#FFFFFF",
+  };
+
   return (
     <AppShell
       roomLabel="Sala Lunas"
       brandHref="/"
       navItems={navItems}
       onNewPostClick={() => setIsCreatePostModalOpen(true)}
-      user={{
-        name: data.user.name,
-        role: data.user.role,
-        initial: data.user.initial,
-        avatarBackgroundColor: "#F2937A",
-        avatarColor: "#FFFFFF",
-      }}
+      user={shellUser}
       contentClassName="mx-auto w-full max-w-[760px] px-5 py-8 sm:px-8 lg:px-10 lg:py-[34px] lg:pb-20"
     >
       <FeedHeader

@@ -2,9 +2,11 @@ import type { AuthTextFieldData } from "./auth-data";
 
 type AuthTextFieldProps = {
   field: AuthTextFieldData;
+  required?: boolean;
+  autoComplete?: string;
 };
 
-export function AuthTextField({ field }: AuthTextFieldProps) {
+export function AuthTextField({ field, required, autoComplete }: AuthTextFieldProps) {
   const borderClass =
     field.variant === "highlight"
       ? "border-[#F2A78E]"
@@ -34,6 +36,8 @@ export function AuthTextField({ field }: AuthTextFieldProps) {
         type={field.type}
         defaultValue={field.value}
         placeholder={field.placeholder}
+        required={required}
+        autoComplete={autoComplete}
         className={inputClassName}
       />
     </div>

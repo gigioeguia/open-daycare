@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { getCurrentUserProfile } from "@/utils/supabase/get-current-user-profile";
 import { FeedShell } from "./components/feed/FeedShell";
 import { feedPageData } from "./components/feed/feed-data";
 
@@ -24,14 +26,23 @@ async function TodosSection() {
   );
 }
 
-export default function Home() {
+async function HomeContent() {
+  await connection();
+  const currentUser = await getCurrentUserProfile();
+
   return (
     <>
-      <FeedShell data={feedPageData} />
-      <Suspense fallback={null}>
-        <TodosSection />
-      </Suspense>
+      <FeedShell data={feedPageData} user={currentUser ?? undefined} />
+      <TodosSection />
     </>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={null}>
+      <HomeContent />
+    </Suspense>
   );
 }
 

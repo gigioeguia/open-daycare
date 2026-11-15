@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import Link from "next/link";
+import { connection } from "next/server";
 import { AppShell } from "../../components/shell/AppShell";
 import type { ShellNavItem } from "../../components/shell/Sidebar";
 import { BellIcon } from "../../components/shell/icons/BellIcon";
@@ -11,6 +13,7 @@ import { KidInfoCard } from "../../components/kids/KidInfoCard";
 import { KidParentsSection } from "../../components/kids/KidParentsSection";
 import { KidProfileHeader } from "../../components/kids/KidProfileHeader";
 import { getKidProfileById, kidProfilePageDataBase } from "../../components/kids/kids-data";
+import { getCurrentUserProfile } from "@/utils/supabase/get-current-user-profile";
 
 export const instant = false;
 
@@ -25,22 +28,28 @@ const navItems: ShellNavItem[] = [
   { id: "account", label: "Mi cuenta", href: "#", icon: <UserIcon /> },
 ];
 
-export default async function KidProfilePage({ params }: KidProfilePageProps) {
+const fallbackUser = {
+  name: "Usuario",
+  role: "Personal · Guardería",
+  initial: "U",
+  avatarBackgroundColor: "#F2937A",
+  avatarColor: "#FFFFFF",
+};
+
+async function KidProfileContent({ params }: KidProfilePageProps) {
+  await connection();
   const { id } = await params;
-  const profile = getKidProfileById(id);
+  const [profile, currentUser] = await Promise.all([
+    Promise.resolve(getKidProfileById(id)),
+    getCurrentUserProfile(),
+  ]);
 
   return (
     <AppShell
       roomLabel="Sala Soles"
       brandHref="/"
       navItems={navItems}
-      user={{
-        name: "Caro Giménez",
-        role: "Maestra · Soles",
-        initial: "C",
-        avatarBackgroundColor: "#F2937A",
-        avatarColor: "#FFFFFF",
-      }}
+      user={currentUser ?? fallbackUser}
       contentClassName="mx-auto w-full max-w-[820px] px-5 py-8 sm:px-8 lg:px-10 lg:py-[34px] lg:pb-20"
     >
       {!profile ? (
@@ -91,5 +100,13 @@ export default async function KidProfilePage({ params }: KidProfilePageProps) {
         </div>
       )}
     </AppShell>
+  );
+}
+
+export default function KidProfilePage(props: KidProfilePageProps) {
+  return (
+    <Suspense fallback={null}>
+      <KidProfileContent {...props} />
+    </Suspense>
   );
 }

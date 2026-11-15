@@ -1,8 +1,6 @@
-import Link from "next/link";
-import { AuthPrimaryAction } from "../components/auth/AuthPrimaryAction";
-import { AuthTextField } from "../components/auth/AuthTextField";
 import { BrandCompactHeader } from "../components/auth/BrandCompactHeader";
 import { BrandPanel } from "../components/auth/BrandPanel";
+import { LoginForm } from "../components/auth/LoginForm";
 import { loginPageData } from "../components/auth/auth-data";
 
 export default function LoginPage() {
@@ -24,28 +22,7 @@ export default function LoginPage() {
           </h2>
           <p className="m-0 mb-7 text-[15px] text-[#94887B]">{data.subtitle}</p>
 
-          <div className="space-y-[18px]">
-            <AuthTextField field={data.emailField} />
-            <AuthTextField field={data.passwordField} />
-          </div>
-
-          <div className="mb-5 mt-2.5 text-right">
-            <Link
-              href={data.forgotPasswordHref}
-              className="text-[13.5px] font-bold text-[#C5503A]"
-            >
-              {data.forgotPasswordLabel}
-            </Link>
-          </div>
-
-          <AuthPrimaryAction href={data.submitHref} label={data.submitLabel} />
-
-          <p className="m-0 mt-6 text-center text-[14.5px] text-[#94887B]">
-            {data.invitePrompt}{" "}
-            <Link href={data.inviteHref} className="font-extrabold text-[#C5503A]">
-              {data.inviteLinkLabel}
-            </Link>
-          </p>
+          <LoginForm data={data} />
         </div>
       </div>
     </main>
