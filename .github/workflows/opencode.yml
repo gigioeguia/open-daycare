@@ -29,4 +29,4 @@ jobs:
         with:
           # Modelo/proveedor usado por OpenCode en Actions.
           # Cambia el valor si usas otro proveedor/modelo (formato: provider/model).
-          model: opencode-go/gpt-6-luna
+          model: opencode-go/iceman-contributor-free
