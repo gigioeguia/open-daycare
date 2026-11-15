@@ -18,23 +18,47 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Project facts
 - Next.js `16.4.6` App Router (`app/`) with React `19.3.0`, TypeScript strict, Tailwind CSS `4.3.3`.
-- Entrypoints: `app/layout.tsx` (root layout/metadata/fonts) and `app/page.tsx` (home route). Global styles in `app/globals.css` (`@import "tailwindcss"`).
-- Path alias: `@/*` → repo root (see `tsconfig.json`).
-- `next.config.ts`: `cacheComponents`, `partialPrefetching`, `experimental.agentFeedback`, and a custom `turbopack.rules` loader for `*.css` via `@tailwindcss/turbopack`.
-- `eslint.config.mjs` uses `eslint-config-next` core-web-vitals + TypeScript presets.
+- Entrypoints: `app/layout.tsx` (root layout/metadata, Fredoka/Nunito fonts) and `app/page.tsx` (home `/` feed). Global styles: `app/globals.css` (`@import "tailwindcss"`).
+- UI actual: feed estático de **Sala Lunas** basado en `references/pantallas/`, con datos ficticios en `app/components/feed/feed-data.ts` y componentes en `app/components/feed/` (sin auth, DB, ni navegación real).
+- Path alias: `@/*` → repo root (`tsconfig.json`).
+- `next.config.ts`: `cacheComponents`, `partialPrefetching`, `experimental.agentFeedback`, y `turbopack.rules` para `*.css` con `@tailwindcss/turbopack`.
+- `eslint.config.mjs`: presets `eslint-config-next` (core-web-vitals + TypeScript) e ignores adicionales para `references/**`.
+- Especificaciones funcionales/UI en `specs/` (`01-feed-home.md` a `06-modal-nueva-publicacion.md`, `.spec-config.yml`).
+
+## Structure (high level)
+- `app/` — rutas App Router, layout, página y componentes de UI (`app/components/feed/`).
+- `references/pantallas/`, `references/screenshots/` — mockups/plantillas de referencia visual (si existen).
+- `specs/` — especificaciones y configuración del flujo spec-driven.
+- `public/` — assets estáticos.
+- `,env`, `,env.template` — variables de entorno locales/plantilla (nombres con coma según repo actual).
+- `skills-lock.json` — lock de skills instaladas.
+- `.playwright/`, `.playwright-mcp/`, `playwright/` — artefactos/sesiones de Playwright (no usar como destino principal para capturas nuevas salvo contexto explícito).
+
+## Supabase & database
+- **Estado:** integración Supabase/PostgreSQL **planificada/no implementada** en código (no hay dependencias de Supabase ni cliente configurado en `package.json`).
+- **Schema de referencia (externo):** `docs` reference → `/datos/openCode/07-DB-Schema` (`opendaycare-database-schema.md`). Define tablas/enums para PostgreSQL/Supabase (p. ej. `daycares`, `users` vinculado a `auth.users`, `rooms`, `children`, `parent_children`, `invitations`, posts, etc.). Tratar como diseño objetivo; puede no estar aplicado en BD.
+- **Convenciones del schema:** PK `uuid`, `created_at`/`updated_at` `timestamptz`, valores persistidos en inglés, etiquetas de UI en español en la capa de presentación.
+- **Entorno:** `,env.template` incluye `SUPBASE_DB_PASSWORD` (placeholder). Al implementar, validar nombres reales de variables requeridas por Supabase/Next.js (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, etc.) y no exponer secretos.
+- **MCP/skills disponibles para tareas Supabase:** usar el server `supabase` en Code Mode (`tools.supabase.*`) y cargar skills `supabase` y/o `supabase-postgres-best-practices` antes de trabajar con DB, Auth, Storage, RLS, migraciones, Edge Functions, tipos, logs o performance Postgres.
 
 ## References & tooling
-- `references/pantallas/` and `references/screenshots/` contain UI mockups/screenshots; use them as design reference for implementation.
-- Playwright MCP is configured in `opencode.json`; store Playwright screenshots/artifacts in `.playwright/` (not repo root or other folders).
-- Use Context7 MCP for up-to-date framework/library docs before relying on training knowledge (especially for Next.js APIs/config).
+- `references/pantallas/` y `references/screenshots/` son la fuente de verdad visual para implementar UI.
+- Playwright MCP configurado en `opencode.json`; guardar capturas/artefactos nuevos en `.playwright/`.
+- Context7 MCP para documentación actualizada de librerías/frameworks/APIs antes de implementar.
+- Supabase MCP (`tools.supabase.*`) para inspección/operaciones del proyecto Supabase cuando aplique.
 
-## Spec Driven Development - Skills
-- /spec Usaremos esta habilidad para crear las especificaciones.
-- /spec-impl Usaremos este skill para hacer las implementaciones.
-- /intellisense Atender y aplicar sugerencias/diagnósticos de IntelliSense (p. ej. clases canónicas Tailwind) y revisar casos similares en el proyecto.
+## Spec Driven Development & skills
+- **Flujo:** `/spec` para crear especificaciones, `/spec-impl` para implementarlas (`specs/.spec-config.yml`: `AutoCreateBranch: true`, `AutoCommitSteps: false`).
+- **Skills instaladas (`skills-lock.json`):** `spec`, `spec-impl`, `supabase`, `supabase-postgres-best-practices`.
+- **Uso recomendado:**
+  - `/spec` / `/spec-impl`: definir e implementar cambios guiados por specs.
+  - `/intellisense`: atender diagnósticos/sugerencias del editor (p. ej. clases Tailwind canónicas) y revisar casos similares.
+  - `supabase`: tareas que involucren productos/librerías/CLI/Auth/Storage/Realtime/Edge Functions, debugging o configuración de Supabase.
+  - `supabase-postgres-best-practices`: diseño/alteración de schema, migraciones, RLS/policies, índices, funciones/triggers, queries SQL y diagnóstico de performance/seguridad en Postgres.
 
 ## Reglas de código
 
 - Usar código limpio: nombres, funciones, variables, etc. en inglés.
-- Eliminar componentes antiguos ya no usados y que no alteres el comportamiento de la aplicacion.
+- Eliminar componentes antiguos ya no usados y que no alteren el comportamiento de la aplicación.
 - Atender sugerencias de IntelliSense/diagnósticos del editor cuando sean reportadas o detectadas (p. ej. `suggestCanonicalClasses` de Tailwind: usar clases canónicas equivalentes como `rounded-2xl` en lugar de `rounded-[16px]`), y revisar patrones similares en el proyecto sin alterar el diseño/comportamiento.
+- Mantener consistencia con la UI/spec de referencia y evitar introducir dependencias/infra (p. ej. Supabase) sin una spec o requerimiento explícito.
