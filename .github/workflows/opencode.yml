@@ -6,6 +6,12 @@ on:
   pull_request_review_comment:
     types: [created]
 
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+
 jobs:
   opencode:
     if: |
@@ -26,6 +32,7 @@ jobs:
         uses: anomalyco/opencode/github@latest
         env:
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
         with:
           # Modelo/proveedor usado por OpenCode en Actions.
           # Cambia el valor si usas otro proveedor/modelo (formato: provider/model).
