@@ -15,7 +15,7 @@ export function SidebarNavItem({
   active = false,
 }: SidebarNavItemProps) {
   const isExternal = href === "#";
-  const base = `flex items-center gap-3 rounded-[12px] px-3 py-[11px] text-[14.5px] ${
+  const base = `flex items-center gap-3 rounded-xl px-3 py-[11px] text-[14.5px] ${
     active
       ? "bg-[#FBE3D8] font-extrabold text-[#D9583C]"
       : "bg-transparent font-semibold text-[#6E6359]"

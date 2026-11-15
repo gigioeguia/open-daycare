@@ -80,7 +80,7 @@ export function AddChildModal({ open, onClose }: AddChildModalProps) {
   };
 
   const inputBaseClassName =
-    "w-full rounded-[14px] border-[1.5px] bg-white px-4 py-[13px] text-[15px] text-[#3F362E] outline-none transition-colors placeholder:text-[#B6A99B] focus:border-[#F2A78E]";
+    "w-full rounded-[14px] border-[1.5px] bg-white px-4 py-3.25 text-[15px] text-[#3F362E] outline-none transition-colors placeholder:text-[#B6A99B] focus:border-[#F2A78E]";
   const inputNormalBorderClassName = "border-[#EADFD0]";
   const inputErrorBorderClassName = "border-[#D9684A] focus:border-[#D9684A]";
   const labelClassName =
@@ -99,7 +99,7 @@ export function AddChildModal({ open, onClose }: AddChildModalProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="my-auto flex max-h-[calc(100vh-3rem)] w-full max-w-[520px] flex-col overflow-hidden rounded-[24px] border border-[#ECE0D0] bg-[#FBF4EC] shadow-[0_20px_50px_-24px_rgba(63,54,46,0.35)] sm:max-h-[calc(100vh-5rem)]"
+        className="my-auto flex max-h-[calc(100vh-3rem)] w-full max-w-[520px] flex-col overflow-hidden rounded-3xl border border-[#ECE0D0] bg-[#FBF4EC] shadow-[0_20px_50px_-24px_rgba(63,54,46,0.35)] sm:max-h-[calc(100vh-5rem)]"
       >
         <div className="flex shrink-0 items-center justify-between border-b border-[#ECE0D0] px-5 py-5 sm:px-[26px]">
           <button
@@ -111,7 +111,7 @@ export function AddChildModal({ open, onClose }: AddChildModalProps) {
           </button>
           <h2
             id={titleId}
-            className="m-0 font-[family-name:var(--font-fredoka)] text-[18px] font-semibold text-[#3F362E]"
+            className="m-0 font-(family-name:--font-fredoka) text-[18px] font-semibold text-[#3F362E]"
           >
             {addChildFormLabels.title}
           </h2>
@@ -130,7 +130,7 @@ export function AddChildModal({ open, onClose }: AddChildModalProps) {
           onSubmit={handleSubmit}
           className="overflow-y-auto px-5 py-6 sm:px-[26px]"
         >
-          <div className="mb-[18px]">
+          <div className="mb-4.5">
             <label htmlFor="add-child-full-name" className={labelClassName}>
               {addChildFormLabels.fullName}
             </label>
@@ -156,7 +156,7 @@ export function AddChildModal({ open, onClose }: AddChildModalProps) {
             ) : null}
           </div>
 
-          <div className="mb-[18px] flex flex-col gap-[14px] sm:flex-row">
+          <div className="mb-4.5 flex flex-col gap-3.5 sm:flex-row">
             <div className="min-w-0 flex-1">
               <label htmlFor="add-child-birth-date" className={labelClassName}>
                 {addChildFormLabels.birthDate}
@@ -224,7 +224,7 @@ export function AddChildModal({ open, onClose }: AddChildModalProps) {
             </div>
           </div>
 
-          <div className="mb-[18px]">
+          <div className="mb-4.5">
             <label htmlFor="add-child-allergies" className={labelClassName}>
               {addChildFormLabels.allergies}
             </label>

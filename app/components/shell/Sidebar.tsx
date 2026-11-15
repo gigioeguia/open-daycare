@@ -40,11 +40,11 @@ export function Sidebar({
         href={brandHref}
         className="flex items-center gap-[11px] px-2 pb-[22px] pt-1"
       >
-        <div className="flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[12px] bg-[linear-gradient(155deg,#F8C3A8,#F2937A)] text-white">
+        <div className="flex h-[38px] w-[38px] flex-none items-center justify-center rounded-xl bg-[linear-gradient(155deg,#F8C3A8,#F2937A)] text-white">
           <SunIcon />
         </div>
         <div>
-          <div className="font-[family-name:var(--font-fredoka)] text-[17px] font-semibold leading-none text-[#3F362E]">
+          <div className="font-(family-name:--font-fredoka) text-[17px] font-semibold leading-none text-[#3F362E]">
             OpenDayCare
           </div>
           <div className="mt-[2px] text-[11.5px] text-[#A89A8B]">{roomLabel}</div>
@@ -53,7 +53,7 @@ export function Sidebar({
 
       <a
         href={newPostHref}
-        className="mb-[18px] flex w-full items-center justify-center gap-2 rounded-[14px] bg-[linear-gradient(180deg,#F4977E,#EE8164)] px-3 py-3 text-[14.5px] font-extrabold text-white shadow-[0_8px_18px_-8px_rgba(238,129,100,0.75)]"
+        className="mb-4.5 flex w-full items-center justify-center gap-2 rounded-[14px] bg-[linear-gradient(180deg,#F4977E,#EE8164)] px-3 py-3 text-[14.5px] font-extrabold text-white shadow-[0_8px_18px_-8px_rgba(238,129,100,0.75)]"
       >
         <PlusIcon />
         {newPostLabel}
@@ -71,7 +71,7 @@ export function Sidebar({
         ))}
       </nav>
 
-      <div className="mt-[10px] border-t border-[#ECE0D0] pt-[14px]">
+      <div className="mt-2.5 border-t border-[#ECE0D0] pt-3.5">
         <UserBadge user={user} />
       </div>
     </aside>

@@ -31,8 +31,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Spec Driven Development - Skills
 - /spec Usaremos esta habilidad para crear las especificaciones.
 - /spec-impl Usaremos este skill para hacer las implementaciones.
+- /intellisense Atender y aplicar sugerencias/diagnósticos de IntelliSense (p. ej. clases canónicas Tailwind) y revisar casos similares en el proyecto.
 
 ## Reglas de código
 
 - Usar código limpio: nombres, funciones, variables, etc. en inglés.
 - Eliminar componentes antiguos ya no usados y que no alteres el comportamiento de la aplicacion.
+- Atender sugerencias de IntelliSense/diagnósticos del editor cuando sean reportadas o detectadas (p. ej. `suggestCanonicalClasses` de Tailwind: usar clases canónicas equivalentes como `rounded-2xl` en lugar de `rounded-[16px]`), y revisar patrones similares en el proyecto sin alterar el diseño/comportamiento.

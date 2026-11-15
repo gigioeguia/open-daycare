@@ -16,10 +16,10 @@ export default function ActivateAccountPage() {
           <SunMarkIcon className="text-white" size={30} />
         </div>
 
-        <h1 className="m-0 mb-2 font-[family-name:var(--font-fredoka)] text-[32px] font-semibold leading-[1.15] text-[#3F362E]">
+        <h1 className="m-0 mb-2 font-(family-name:--font-fredoka) text-[32px] font-semibold leading-[1.15] text-[#3F362E]">
           {data.title}
         </h1>
-        <p className="m-0 mb-[26px] text-[15.5px] leading-[1.55] text-[#94887B]">
+        <p className="m-0 mb-6.5 text-[15.5px] leading-[1.55] text-[#94887B]">
           {data.subtitle}
         </p>
 
@@ -31,7 +31,7 @@ export default function ActivateAccountPage() {
           <AuthTextField field={data.passwordField} />
         </div>
 
-        <div className="mt-[18px]">
+        <div className="mt-4.5">
           <ConsentNotice data={data.consent} />
         </div>
 

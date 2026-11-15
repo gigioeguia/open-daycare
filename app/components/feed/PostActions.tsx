@@ -8,7 +8,7 @@ type PostActionsProps = {
 
 export function PostActions({ reactions, comments }: PostActionsProps) {
   return (
-    <div className="mt-4 flex items-center gap-[18px] border-t border-[#F0E6D8] pt-[14px]">
+    <div className="mt-4 flex items-center gap-4.5 border-t border-[#F0E6D8] pt-3.5">
       <span className="flex items-center gap-[7px] text-[14px] font-bold text-[#E0654A]">
         <HeartIcon />
         {reactions}
