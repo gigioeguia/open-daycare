@@ -41,7 +41,7 @@ export type InvitationSummaryData = {
 
 export type ConsentNoticeData = {
   text: string; // texto de autorización
-  checked: boolean; // siempre true en UI estática
+  checked: boolean; // estado inicial (UI estática o interactiva)
 };
 
 export type ActivateAccountPageData = {
@@ -53,7 +53,7 @@ export type ActivateAccountPageData = {
   passwordField: AuthTextFieldData;
   consent: ConsentNoticeData;
   submitLabel: string; // "Activar mi cuenta"
-  submitHref: string; // "/"
+  submittingLabel?: string;
   loginPrompt: string; // "¿Ya tenés cuenta?"
   loginLinkLabel: string; // "Iniciar sesión"
   loginHref: string; // "/login"
@@ -98,8 +98,8 @@ export const activateAccountPageData: ActivateAccountPageData = {
     "Te invitaron a seguir el día de tu hijo. Creá tu contraseña para activar la cuenta.",
   invitation: {
     promptLabel: "Te invitaron a seguir a",
-    childLabel: "Mateo · Sala Soles",
-    initial: "M",
+    childLabel: "tu hijo/a",
+    initial: "O",
     avatarBackground: "#A9D9E8",
     avatarColor: "#1F7A93",
   },
@@ -108,7 +108,7 @@ export const activateAccountPageData: ActivateAccountPageData = {
     label: "CÓDIGO DE INVITACIÓN",
     type: "text",
     name: "invitationCode",
-    value: "7K4P9",
+    placeholder: "Ej. 7K4P9",
     letterSpacing: true,
   },
   emailField: {
@@ -116,22 +116,22 @@ export const activateAccountPageData: ActivateAccountPageData = {
     label: "EMAIL",
     type: "email",
     name: "email",
-    value: "lucia.fernandez@gmail.com",
+    placeholder: "correo@ejemplo.com",
   },
   passwordField: {
     id: "activate-password",
     label: "CREAR CONTRASEÑA",
     type: "password",
     name: "password",
-    value: "contraseña",
+    placeholder: "••••••••",
     variant: "highlight",
   },
   consent: {
     text: "Autorizo a la guardería a tomar y compartir fotos de mi hijo dentro de la app.",
-    checked: true,
+    checked: false,
   },
   submitLabel: "Activar mi cuenta",
-  submitHref: "/",
+  submittingLabel: "Activando cuenta...",
   loginPrompt: "¿Ya tenés cuenta?",
   loginLinkLabel: "Iniciar sesión",
   loginHref: "/login",

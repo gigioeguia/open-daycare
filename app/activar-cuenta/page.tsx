@@ -1,13 +1,19 @@
-import Link from "next/link";
-import { AuthPrimaryAction } from "../components/auth/AuthPrimaryAction";
-import { AuthTextField } from "../components/auth/AuthTextField";
-import { ConsentNotice } from "../components/auth/ConsentNotice";
-import { InvitationSummary } from "../components/auth/InvitationSummary";
+import { Suspense } from "react";
 import { SunMarkIcon } from "../components/auth/SunMarkIcon";
+import { ActivationForm } from "../components/auth/ActivationForm";
 import { activateAccountPageData } from "../components/auth/auth-data";
 
-export default function ActivateAccountPage() {
+export const instant = false;
+
+type ActivateAccountPageProps = {
+  searchParams?: Promise<{ code?: string; email?: string }>;
+};
+
+async function ActivateAccountContent({ searchParams }: ActivateAccountPageProps) {
   const data = activateAccountPageData;
+  const params = (await searchParams) ?? {};
+  const initialCode = typeof params.code === "string" ? params.code : undefined;
+  const initialEmail = typeof params.email === "string" ? params.email : undefined;
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#FBF4EC] p-6 sm:p-10">
@@ -23,27 +29,20 @@ export default function ActivateAccountPage() {
           {data.subtitle}
         </p>
 
-        <InvitationSummary data={data.invitation} />
-
-        <div className="space-y-[18px]">
-          <AuthTextField field={data.codeField} />
-          <AuthTextField field={data.emailField} />
-          <AuthTextField field={data.passwordField} />
-        </div>
-
-        <div className="mt-4.5">
-          <ConsentNotice data={data.consent} />
-        </div>
-
-        <AuthPrimaryAction href={data.submitHref} label={data.submitLabel} />
-
-        <p className="m-0 mt-[22px] text-center text-[14.5px] text-[#94887B]">
-          {data.loginPrompt}{" "}
-          <Link href={data.loginHref} className="font-extrabold text-[#C5503A]">
-            {data.loginLinkLabel}
-          </Link>
-        </p>
+        <ActivationForm
+          data={data}
+          initialCode={initialCode}
+          initialEmail={initialEmail}
+        />
       </div>
     </main>
+  );
+}
+
+export default function ActivateAccountPage(props: ActivateAccountPageProps) {
+  return (
+    <Suspense fallback={null}>
+      <ActivateAccountContent {...props} />
+    </Suspense>
   );
 }
