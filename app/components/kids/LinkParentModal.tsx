@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import type { FormEvent } from "react";
 import {
-  generateInvitationCode,
   hasLinkParentFormErrors,
   initialLinkParentFormValues,
   linkParentFormLabels,
@@ -21,7 +20,11 @@ type LinkParentModalProps = {
   childId: string;
   childName: string;
   onClose: () => void;
-  onSuccess: (email: string) => void;
+};
+
+type SuccessResult = {
+  email: string;
+  code: string;
 };
 
 export function LinkParentModal({
@@ -29,14 +32,15 @@ export function LinkParentModal({
   childId,
   childName,
   onClose,
-  onSuccess,
 }: LinkParentModalProps) {
   const [values, setValues] = useState<LinkParentFormValues>(
     initialLinkParentFormValues,
   );
   const [errors, setErrors] = useState<LinkParentFormErrors>({});
   const [generalError, setGeneralError] = useState<string | null>(null);
-  const [invitationCode] = useState(generateInvitationCode);
+  const [successResult, setSuccessResult] = useState<SuccessResult | null>(
+    null,
+  );
   const [isPending, startTransition] = useTransition();
   const fullNameInputRef = useRef<HTMLInputElement>(null);
   const titleId = "link-parent-modal-title";
@@ -46,7 +50,9 @@ export function LinkParentModal({
       return;
     }
 
-    fullNameInputRef.current?.focus();
+    if (!successResult) {
+      fullNameInputRef.current?.focus();
+    }
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -61,7 +67,7 @@ export function LinkParentModal({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [open, onClose, isPending]);
+  }, [open, onClose, isPending, successResult]);
 
   if (!open) {
     return null;
@@ -94,7 +100,6 @@ export function LinkParentModal({
         fullName: values.fullName,
         email: values.email,
         relationship: values.relationship,
-        code: invitationCode,
       });
 
       if (!result.ok) {
@@ -103,8 +108,7 @@ export function LinkParentModal({
         return;
       }
 
-      onSuccess(result.email);
-      onClose();
+      setSuccessResult({ email: result.email, code: result.code });
     });
   };
 
@@ -168,173 +172,195 @@ export function LinkParentModal({
           </button>
         </div>
 
-        <form
-          noValidate
-          onSubmit={handleSubmit}
-          className="overflow-y-auto px-5 py-[22px] sm:px-[26px]"
-        >
-          <div className="mb-5 flex gap-[11px] rounded-[14px] bg-[#E3ECFB] px-4 py-3.25">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#4E72C8"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="mt-px flex-none"
-              aria-hidden="true"
+        {successResult ? (
+          <div className="overflow-y-auto px-5 py-[22px] sm:px-[26px]">
+            <div className="mb-5 rounded-2xl border border-[#BFE3C8] bg-[#EAF7EE] px-4 py-4 text-center">
+              <div className="mb-1 font-(family-name:--font-fredoka) text-[18px] font-semibold text-[#2E6B3F]">
+                {linkParentFormLabels.successTitle}
+              </div>
+              <p className="m-0 text-[14px] leading-[1.45] text-[#2E6B3F]">
+                {linkParentFormLabels.successMessage(successResult.email)}
+              </p>
+            </div>
+
+            <div className="mb-5 rounded-2xl border-[1.5px] border-dashed border-[#E6D08A] bg-[#FBF1D6] p-4.5 text-center">
+              <div className="mb-2 text-[12px] font-extrabold tracking-[0.7px] text-[#A88526]">
+                {linkParentFormLabels.sentCodeLabel}
+              </div>
+              <div className="font-(family-name:--font-fredoka) text-[34px] font-semibold tracking-[7px] text-[#8A7234]">
+                {successResult.code}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleClose}
+              className="flex w-full items-center justify-center rounded-[14px] bg-[linear-gradient(180deg,#F4977E,#EE8164)] px-4 py-3.5 text-[15.5px] font-extrabold text-white shadow-[0_10px_22px_-8px_rgba(238,129,100,0.7)] transition-opacity hover:opacity-95"
             >
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 16v-4M12 8h.01" />
-            </svg>
-            <span className="text-[13.5px] leading-[1.45] text-[#3F5694]">
-              {linkParentFormLabels.infoBanner(childName)}
-            </span>
+              {linkParentFormLabels.done}
+            </button>
           </div>
-
-          {generalError ? (
-            <div className="mb-4 rounded-[14px] border border-[#F0C4B8] bg-[#FDEDEA] px-4 py-3 text-[13.5px] font-semibold text-[#B84C32]">
-              {generalError}
-            </div>
-          ) : null}
-
-          <div className="mb-4.5">
-            <label htmlFor="link-parent-full-name" className={labelClassName}>
-              {linkParentFormLabels.fullName}
-            </label>
-            <input
-              ref={fullNameInputRef}
-              id="link-parent-full-name"
-              name="fullName"
-              type="text"
-              value={values.fullName}
-              onChange={(event) => updateField("fullName", event.target.value)}
-              placeholder={linkParentFormPlaceholders.fullName}
-              disabled={isPending}
-              aria-invalid={Boolean(errors.fullName)}
-              aria-describedby={
-                errors.fullName ? "link-parent-full-name-error" : undefined
-              }
-              className={`${inputBaseClassName} ${
-                errors.fullName ? inputErrorBorderClassName : inputNormalBorderClassName
-              }`}
-            />
-            {errors.fullName ? (
-              <p
-                id="link-parent-full-name-error"
-                className="mt-2 text-[13px] font-semibold text-[#D9684A]"
-              >
-                {errors.fullName}
-              </p>
-            ) : null}
-          </div>
-
-          <div className="mb-4.5">
-            <label htmlFor="link-parent-email" className={labelClassName}>
-              {linkParentFormLabels.email}
-            </label>
-            <input
-              id="link-parent-email"
-              name="email"
-              type="email"
-              value={values.email}
-              onChange={(event) => updateField("email", event.target.value)}
-              placeholder={linkParentFormPlaceholders.email}
-              disabled={isPending}
-              aria-invalid={Boolean(errors.email)}
-              aria-describedby={errors.email ? "link-parent-email-error" : undefined}
-              className={`${inputBaseClassName} ${
-                errors.email ? inputErrorBorderClassName : inputNormalBorderClassName
-              }`}
-            />
-            {errors.email ? (
-              <p
-                id="link-parent-email-error"
-                className="mt-2 text-[13px] font-semibold text-[#D9684A]"
-              >
-                {errors.email}
-              </p>
-            ) : null}
-          </div>
-
-          <div className="mb-5">
-            <div className={`${labelClassName} mb-2.5`}>
-              {linkParentFormLabels.relationship}
-            </div>
-            <div
-              role="group"
-              aria-label={linkParentFormLabels.relationship}
-              aria-describedby={
-                errors.relationship ? "link-parent-relationship-error" : undefined
-              }
-              className="flex gap-2.25"
-            >
-              {relationshipOptions.map((option) => {
-                const selected = isRelationshipSelected(option.value);
-                return (
-                  <button
-                    key={option.value}
-                    type="button"
-                    aria-pressed={selected}
-                    disabled={isPending}
-                    onClick={() => updateField("relationship", option.value)}
-                    className={`flex-1 rounded-full border-[1.5px] px-3 py-[11px] text-[14px] font-extrabold transition-colors disabled:opacity-60 ${
-                      selected
-                        ? "border-[#9FB8EC] bg-[#CCD8F4] text-[#4E72C8]"
-                        : "border-[#ECE0D0] bg-[#FFFDF9] text-[#6E6359] hover:border-[#D8CBBA]"
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                );
-              })}
-            </div>
-            {errors.relationship ? (
-              <p
-                id="link-parent-relationship-error"
-                className="mt-2 text-[13px] font-semibold text-[#D9684A]"
-              >
-                {errors.relationship}
-              </p>
-            ) : null}
-          </div>
-
-          <div className="mb-5 rounded-2xl border-[1.5px] border-dashed border-[#E6D08A] bg-[#FBF1D6] p-4.5 text-center">
-            <div className="mb-2 text-[12px] font-extrabold tracking-[0.7px] text-[#A88526]">
-              {linkParentFormLabels.invitationCode}
-            </div>
-            <div className="font-(family-name:--font-fredoka) text-[34px] font-semibold tracking-[7px] text-[#8A7234]">
-              {invitationCode}
-            </div>
-            <div className="mt-[6px] text-[13px] text-[#A88526]">
-              {linkParentFormLabels.expiresIn}
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isPending}
-            className="flex w-full items-center justify-center gap-2.25 rounded-[14px] bg-[linear-gradient(180deg,#F4977E,#EE8164)] px-4 py-3.5 text-[15.5px] font-extrabold text-white shadow-[0_10px_22px_-8px_rgba(238,129,100,0.7)] transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-70"
+        ) : (
+          <form
+            noValidate
+            onSubmit={handleSubmit}
+            className="overflow-y-auto px-5 py-[22px] sm:px-[26px]"
           >
-            <svg
-              width="19"
-              height="19"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#fff"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
+            <div className="mb-5 flex gap-[11px] rounded-[14px] bg-[#E3ECFB] px-4 py-3.25">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#4E72C8"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="mt-px flex-none"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 16v-4M12 8h.01" />
+              </svg>
+              <span className="text-[13.5px] leading-[1.45] text-[#3F5694]">
+                {linkParentFormLabels.infoBanner(childName)}
+              </span>
+            </div>
+
+            {generalError ? (
+              <div className="mb-4 rounded-[14px] border border-[#F0C4B8] bg-[#FDEDEA] px-4 py-3 text-[13.5px] font-semibold text-[#B84C32]">
+                {generalError}
+              </div>
+            ) : null}
+
+            <div className="mb-4.5">
+              <label htmlFor="link-parent-full-name" className={labelClassName}>
+                {linkParentFormLabels.fullName}
+              </label>
+              <input
+                ref={fullNameInputRef}
+                id="link-parent-full-name"
+                name="fullName"
+                type="text"
+                value={values.fullName}
+                onChange={(event) => updateField("fullName", event.target.value)}
+                placeholder={linkParentFormPlaceholders.fullName}
+                disabled={isPending}
+                aria-invalid={Boolean(errors.fullName)}
+                aria-describedby={
+                  errors.fullName ? "link-parent-full-name-error" : undefined
+                }
+                className={`${inputBaseClassName} ${
+                  errors.fullName
+                    ? inputErrorBorderClassName
+                    : inputNormalBorderClassName
+                }`}
+              />
+              {errors.fullName ? (
+                <p
+                  id="link-parent-full-name-error"
+                  className="mt-2 text-[13px] font-semibold text-[#D9684A]"
+                >
+                  {errors.fullName}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="mb-4.5">
+              <label htmlFor="link-parent-email" className={labelClassName}>
+                {linkParentFormLabels.email}
+              </label>
+              <input
+                id="link-parent-email"
+                name="email"
+                type="email"
+                value={values.email}
+                onChange={(event) => updateField("email", event.target.value)}
+                placeholder={linkParentFormPlaceholders.email}
+                disabled={isPending}
+                aria-invalid={Boolean(errors.email)}
+                aria-describedby={
+                  errors.email ? "link-parent-email-error" : undefined
+                }
+                className={`${inputBaseClassName} ${
+                  errors.email ? inputErrorBorderClassName : inputNormalBorderClassName
+                }`}
+              />
+              {errors.email ? (
+                <p
+                  id="link-parent-email-error"
+                  className="mt-2 text-[13px] font-semibold text-[#D9684A]"
+                >
+                  {errors.email}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="mb-5">
+              <div className={`${labelClassName} mb-2.5`}>
+                {linkParentFormLabels.relationship}
+              </div>
+              <div
+                role="group"
+                aria-label={linkParentFormLabels.relationship}
+                aria-describedby={
+                  errors.relationship ? "link-parent-relationship-error" : undefined
+                }
+                className="flex gap-2.25"
+              >
+                {relationshipOptions.map((option) => {
+                  const selected = isRelationshipSelected(option.value);
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      aria-pressed={selected}
+                      disabled={isPending}
+                      onClick={() => updateField("relationship", option.value)}
+                      className={`flex-1 rounded-full border-[1.5px] px-3 py-[11px] text-[14px] font-extrabold transition-colors disabled:opacity-60 ${
+                        selected
+                          ? "border-[#9FB8EC] bg-[#CCD8F4] text-[#4E72C8]"
+                          : "border-[#ECE0D0] bg-[#FFFDF9] text-[#6E6359] hover:border-[#D8CBBA]"
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  );
+                })}
+              </div>
+              {errors.relationship ? (
+                <p
+                  id="link-parent-relationship-error"
+                  className="mt-2 text-[13px] font-semibold text-[#D9684A]"
+                >
+                  {errors.relationship}
+                </p>
+              ) : null}
+            </div>
+
+            <button
+              type="submit"
+              disabled={isPending}
+              className="flex w-full items-center justify-center gap-2.25 rounded-[14px] bg-[linear-gradient(180deg,#F4977E,#EE8164)] px-4 py-3.5 text-[15.5px] font-extrabold text-white shadow-[0_10px_22px_-8px_rgba(238,129,100,0.7)] transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              <path d="m22 2-7 20-4-9-9-4z" />
-              <path d="M22 2 11 13" />
-            </svg>
-            {isPending ? linkParentFormLabels.submitting : linkParentFormLabels.submit}
-          </button>
-        </form>
+              <svg
+                width="19"
+                height="19"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#fff"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="m22 2-7 20-4-9-9-4z" />
+                <path d="M22 2 11 13" />
+              </svg>
+              {isPending ? linkParentFormLabels.submitting : linkParentFormLabels.submit}
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );

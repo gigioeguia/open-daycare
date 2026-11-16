@@ -30,10 +30,12 @@ export const linkParentFormLabels = {
   fullName: "NOMBRE DEL PADRE/MADRE",
   email: "EMAIL",
   relationship: "PARENTESCO",
-  invitationCode: "CÓDIGO DE INVITACIÓN",
-  expiresIn: "Vence en 7 días",
   submit: "Enviar invitación",
   submitting: "Enviando invitación...",
+  successTitle: "Invitación enviada",
+  successMessage: (email: string) => `Enviamos la invitación a ${email}.`,
+  sentCodeLabel: "Código de verificación enviado",
+  done: "Listo",
 };
 
 export const linkParentFormPlaceholders = {
@@ -57,19 +59,6 @@ export const initialLinkParentFormValues: LinkParentFormValues = {
 
 const NAME_PATTERN = /^[\p{L} ]+$/u;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const INVITATION_CODE_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-const INVITATION_CODE_LENGTH = 5;
-
-export function generateInvitationCode(): string {
-  let code = "";
-  for (let index = 0; index < INVITATION_CODE_LENGTH; index += 1) {
-    const randomIndex = Math.floor(
-      Math.random() * INVITATION_CODE_CHARACTERS.length,
-    );
-    code += INVITATION_CODE_CHARACTERS[randomIndex];
-  }
-  return code;
-}
 
 export function isValidParentName(value: string): boolean {
   return NAME_PATTERN.test(value);

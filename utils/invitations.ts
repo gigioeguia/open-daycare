@@ -122,7 +122,9 @@ export function composeInvitationEmail(context: InvitationEmailContext): {
 
   const locationLine = locationLabel ? ` (${locationLabel})` : "";
   const intro = `Hola ${context.recipientName}, te invitaron a seguir el día de ${context.childName}${locationLine} en OpenDayCare.`;
-  const instruction = "Usá este código para activar tu cuenta y vincularte:";
+  const instruction =
+    "Usá este código de verificación para activar tu cuenta y vincularte:";
+  const codeLabel = "Código de verificación:";
   const expiryText = `Este código vence en ${expiresInDays} días.`;
 
   const html = `
@@ -130,6 +132,7 @@ export function composeInvitationEmail(context: InvitationEmailContext): {
       <h2 style="margin: 0 0 12px;">Invitación a OpenDayCare</h2>
       <p style="margin: 0 0 12px;">${escapeHtml(intro)}</p>
       <p style="margin: 0 0 8px;">${escapeHtml(instruction)}</p>
+      <p style="margin: 0 0 4px; font-size: 13px; font-weight: 700; color: #6E6359;">${escapeHtml(codeLabel)}</p>
       <p style="margin: 0 0 12px; font-size: 24px; font-weight: 700; letter-spacing: 4px;">${escapeHtml(context.code)}</p>
       <p style="margin: 0 0 12px;">${escapeHtml(expiryText)}</p>
       <p style="margin: 0 0 16px;">
@@ -150,6 +153,7 @@ export function composeInvitationEmail(context: InvitationEmailContext): {
     intro,
     "",
     instruction,
+    codeLabel,
     context.code,
     "",
     expiryText,
