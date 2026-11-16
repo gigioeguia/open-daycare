@@ -3,10 +3,10 @@
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import {
+  generateUniqueInvitationCode,
   getInvitationExpiresAt,
   getSupabaseAdminClient,
   normalizeEmail,
-  normalizeInvitationCode,
   sendInvitationEmail,
 } from "@/utils/invitations";
 
@@ -80,7 +80,6 @@ export async function sendParentInvitation(input: {
   fullName: string;
   email: string;
   relationship: string;
-  code: string;
 }): Promise<SendParentInvitationResult> {
   try {
     const cookieStore = await cookies();
@@ -98,15 +97,8 @@ export async function sendParentInvitation(input: {
     const fullName = input.fullName.trim();
     const email = normalizeEmail(input.email);
     const relationship = input.relationship;
-    const code = normalizeInvitationCode(input.code);
 
     const fieldErrors = validateInput({ fullName, email, relationship });
-    if (!/^[A-Z0-9]{5}$/.test(code)) {
-      return {
-        ok: false,
-        message: "El código de invitación no es válido. Cierra y vuelve a abrir el modal para generar uno nuevo.",
-      };
-    }
     if (Object.keys(fieldErrors).length > 0) {
       return { ok: false, message: INVALID_INPUT_MESSAGE, fieldErrors };
     }
@@ -180,22 +172,11 @@ export async function sendParentInvitation(input: {
       (inv) => normalizeEmail(inv.email as string) === email,
     );
 
-    // Ensure submitted code is unique (allow keeping same code when reissuing the same invitation)
-    const { data: codeOwner, error: codeOwnerError } = await supabase
-      .from("invitations")
-      .select("id")
-      .eq("code", code)
-      .maybeSingle();
-
-    if (codeOwnerError) {
+    let code: string;
+    try {
+      code = await generateUniqueInvitationCode(supabase);
+    } catch {
       return { ok: false, message: GENERIC_ERROR_MESSAGE };
-    }
-    if (codeOwner && (!pendingMatch || codeOwner.id !== pendingMatch.id)) {
-      return {
-        ok: false,
-        message:
-          "El código de invitación ya está en uso. Cierra y vuelve a abrir el modal para generar uno nuevo.",
-      };
     }
 
     const expiresAt = getInvitationExpiresAt();
@@ -234,14 +215,6 @@ export async function sendParentInvitation(input: {
       });
 
       if (insertError) {
-        const insertErrorCode = (insertError as { code?: string }).code;
-        if (insertErrorCode === "23505") {
-          return {
-            ok: false,
-            message:
-              "El código de invitación ya está en uso. Cierra y vuelve a abrir el modal para generar uno nuevo.",
-          };
-        }
         return { ok: false, message: GENERIC_ERROR_MESSAGE };
       }
     }
