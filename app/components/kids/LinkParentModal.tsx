@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import type { FormEvent } from "react";
 import {
   generateInvitationCode,
   hasLinkParentFormErrors,
   initialLinkParentFormValues,
-  linkParentFormErrorMessages,
   linkParentFormLabels,
   linkParentFormPlaceholders,
   relationshipOptions,
@@ -15,19 +14,30 @@ import {
   type LinkParentFormValues,
   type RelationshipOption,
 } from "./link-parent-form";
+import { sendParentInvitation } from "@/app/kids/[id]/actions";
 
 type LinkParentModalProps = {
   open: boolean;
+  childId: string;
   childName: string;
   onClose: () => void;
+  onSuccess: (email: string) => void;
 };
 
-export function LinkParentModal({ open, childName, onClose }: LinkParentModalProps) {
+export function LinkParentModal({
+  open,
+  childId,
+  childName,
+  onClose,
+  onSuccess,
+}: LinkParentModalProps) {
   const [values, setValues] = useState<LinkParentFormValues>(
     initialLinkParentFormValues,
   );
   const [errors, setErrors] = useState<LinkParentFormErrors>({});
+  const [generalError, setGeneralError] = useState<string | null>(null);
   const [invitationCode] = useState(generateInvitationCode);
+  const [isPending, startTransition] = useTransition();
   const fullNameInputRef = useRef<HTMLInputElement>(null);
   const titleId = "link-parent-modal-title";
 
@@ -41,7 +51,9 @@ export function LinkParentModal({ open, childName, onClose }: LinkParentModalPro
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        onClose();
+        if (!isPending) {
+          onClose();
+        }
       }
     };
 
@@ -49,33 +61,55 @@ export function LinkParentModal({ open, childName, onClose }: LinkParentModalPro
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [open, onClose]);
+  }, [open, onClose, isPending]);
 
   if (!open) {
     return null;
   }
 
   const handleClose = () => {
+    if (isPending) return;
     onClose();
   };
 
   const updateField = (field: keyof LinkParentFormValues, value: string) => {
     setValues((current) => ({ ...current, [field]: value }));
     setErrors((current) => ({ ...current, [field]: undefined }));
+    setGeneralError(null);
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setGeneralError(null);
     const nextErrors = validateLinkParentForm(values);
     setErrors(nextErrors);
 
-    if (!hasLinkParentFormErrors(nextErrors)) {
-      handleClose();
+    if (hasLinkParentFormErrors(nextErrors)) {
+      return;
     }
+
+    startTransition(async () => {
+      const result = await sendParentInvitation({
+        childId,
+        fullName: values.fullName,
+        email: values.email,
+        relationship: values.relationship,
+        code: invitationCode,
+      });
+
+      if (!result.ok) {
+        setErrors((current) => ({ ...current, ...(result.fieldErrors ?? {}) }));
+        setGeneralError(result.message);
+        return;
+      }
+
+      onSuccess(result.email);
+      onClose();
+    });
   };
 
   const inputBaseClassName =
-    "w-full rounded-[14px] border-[1.5px] bg-white px-4 py-3.25 text-[15px] text-[#3F362E] outline-none transition-colors placeholder:text-[#B6A99B] focus:border-[#F2A78E]";
+    "w-full rounded-[14px] border-[1.5px] bg-white px-4 py-3.25 text-[15px] text-[#3F362E] outline-none transition-colors placeholder:text-[#B6A99B] focus:border-[#F2A78E] disabled:opacity-60";
   const inputNormalBorderClassName = "border-[#EADFD0]";
   const inputErrorBorderClassName = "border-[#D9684A] focus:border-[#D9684A]";
   const labelClassName =
@@ -114,8 +148,9 @@ export function LinkParentModal({ open, childName, onClose }: LinkParentModalPro
           <button
             type="button"
             onClick={handleClose}
+            disabled={isPending}
             aria-label={linkParentFormLabels.close}
-            className="flex h-[34px] w-[34px] items-center justify-center rounded-[10px] bg-[#F0E6D8] text-[#94887B] transition-colors hover:bg-[#E8DCCC] hover:text-[#7E7266]"
+            className="flex h-[34px] w-[34px] items-center justify-center rounded-[10px] bg-[#F0E6D8] text-[#94887B] transition-colors hover:bg-[#E8DCCC] hover:text-[#7E7266] disabled:opacity-60"
           >
             <svg
               width="18"
@@ -159,6 +194,12 @@ export function LinkParentModal({ open, childName, onClose }: LinkParentModalPro
             </span>
           </div>
 
+          {generalError ? (
+            <div className="mb-4 rounded-[14px] border border-[#F0C4B8] bg-[#FDEDEA] px-4 py-3 text-[13.5px] font-semibold text-[#B84C32]">
+              {generalError}
+            </div>
+          ) : null}
+
           <div className="mb-4.5">
             <label htmlFor="link-parent-full-name" className={labelClassName}>
               {linkParentFormLabels.fullName}
@@ -171,6 +212,7 @@ export function LinkParentModal({ open, childName, onClose }: LinkParentModalPro
               value={values.fullName}
               onChange={(event) => updateField("fullName", event.target.value)}
               placeholder={linkParentFormPlaceholders.fullName}
+              disabled={isPending}
               aria-invalid={Boolean(errors.fullName)}
               aria-describedby={
                 errors.fullName ? "link-parent-full-name-error" : undefined
@@ -200,6 +242,7 @@ export function LinkParentModal({ open, childName, onClose }: LinkParentModalPro
               value={values.email}
               onChange={(event) => updateField("email", event.target.value)}
               placeholder={linkParentFormPlaceholders.email}
+              disabled={isPending}
               aria-invalid={Boolean(errors.email)}
               aria-describedby={errors.email ? "link-parent-email-error" : undefined}
               className={`${inputBaseClassName} ${
@@ -235,8 +278,9 @@ export function LinkParentModal({ open, childName, onClose }: LinkParentModalPro
                     key={option.value}
                     type="button"
                     aria-pressed={selected}
+                    disabled={isPending}
                     onClick={() => updateField("relationship", option.value)}
-                    className={`flex-1 rounded-full border-[1.5px] px-3 py-[11px] text-[14px] font-extrabold transition-colors ${
+                    className={`flex-1 rounded-full border-[1.5px] px-3 py-[11px] text-[14px] font-extrabold transition-colors disabled:opacity-60 ${
                       selected
                         ? "border-[#9FB8EC] bg-[#CCD8F4] text-[#4E72C8]"
                         : "border-[#ECE0D0] bg-[#FFFDF9] text-[#6E6359] hover:border-[#D8CBBA]"
@@ -252,7 +296,7 @@ export function LinkParentModal({ open, childName, onClose }: LinkParentModalPro
                 id="link-parent-relationship-error"
                 className="mt-2 text-[13px] font-semibold text-[#D9684A]"
               >
-                {errors.relationship || linkParentFormErrorMessages.relationshipRequired}
+                {errors.relationship}
               </p>
             ) : null}
           </div>
@@ -271,7 +315,8 @@ export function LinkParentModal({ open, childName, onClose }: LinkParentModalPro
 
           <button
             type="submit"
-            className="flex w-full items-center justify-center gap-2.25 rounded-[14px] bg-[linear-gradient(180deg,#F4977E,#EE8164)] px-4 py-3.5 text-[15.5px] font-extrabold text-white shadow-[0_10px_22px_-8px_rgba(238,129,100,0.7)] transition-opacity hover:opacity-95"
+            disabled={isPending}
+            className="flex w-full items-center justify-center gap-2.25 rounded-[14px] bg-[linear-gradient(180deg,#F4977E,#EE8164)] px-4 py-3.5 text-[15.5px] font-extrabold text-white shadow-[0_10px_22px_-8px_rgba(238,129,100,0.7)] transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-70"
           >
             <svg
               width="19"
@@ -287,7 +332,7 @@ export function LinkParentModal({ open, childName, onClose }: LinkParentModalPro
               <path d="m22 2-7 20-4-9-9-4z" />
               <path d="M22 2 11 13" />
             </svg>
-            {linkParentFormLabels.submit}
+            {isPending ? linkParentFormLabels.submitting : linkParentFormLabels.submit}
           </button>
         </form>
       </div>

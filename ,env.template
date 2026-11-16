@@ -1,8 +1,8 @@
 SUPBASE_DB_PASSWORD=XXXXXXXXXXXxx
 
 # Supabase project (required for supabase/seed/create-test-users.mjs)
-SUPABASE_URL=
-SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_URL=https://ixhfvteeyzmwspyhupti.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=XXXXXXXXXXXXXXXXXXXX
 
 NEXT_PUBLIC_SUPABASE_URL=https://ixhfvteeyzmwspyhupti.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=XXXXXXXXXXXXXXXXXXXXXXXX
@@ -19,3 +19,9 @@ TEST_STAFF1_FULL_NAME="Staff Pruebas 1"
 TEST_STAFF2_EMAIL="staff2.pruebas@opendaycare.test"
 TEST_STAFF2_PASSWORD=""
 TEST_STAFF2_FULL_NAME="Staff Pruebas 2"
+
+# Invitations (SPEC 12 - Resend)
+RESEND_API_KEY=XXXXXXXXXXXXXXXXXXXXXXxx
+INVITATION_FROM_EMAIL=onboarding@resend.dev
+INVITATION_FROM_NAME=OpenDayCare
+NEXT_PUBLIC_SITE_URL=http://localhost:3000

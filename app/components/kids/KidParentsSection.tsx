@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { KidParentsCard } from "./KidParentsCard";
 import { LinkParentModal } from "./LinkParentModal";
 import type { LinkedParent } from "./kids-data";
 
 type KidParentsSectionProps = {
+  childId: string;
   childName: string;
   sectionLabel: string;
   linkAnotherParentLabel: string;
@@ -13,6 +14,7 @@ type KidParentsSectionProps = {
 };
 
 export function KidParentsSection({
+  childId,
   childName,
   sectionLabel,
   linkAnotherParentLabel,
@@ -20,14 +22,35 @@ export function KidParentsSection({
 }: KidParentsSectionProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalSession, setModalSession] = useState(0);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!successMessage) return;
+    const timeoutId = window.setTimeout(() => {
+      setSuccessMessage(null);
+    }, 5000);
+    return () => window.clearTimeout(timeoutId);
+  }, [successMessage]);
 
   const handleOpenModal = () => {
     setModalSession((current) => current + 1);
     setIsModalOpen(true);
   };
 
+  const handleInvitationSuccess = (email: string) => {
+    setSuccessMessage(`Invitación enviada a ${email}`);
+  };
+
   return (
     <>
+      {successMessage ? (
+        <div
+          role="status"
+          className="rounded-[14px] border border-[#BFE3C8] bg-[#EAF7EE] px-4 py-3 text-[14px] font-semibold text-[#2E6B3F]"
+        >
+          {successMessage}
+        </div>
+      ) : null}
       <KidParentsCard
         sectionLabel={sectionLabel}
         linkAnotherParentLabel={linkAnotherParentLabel}
@@ -37,8 +60,10 @@ export function KidParentsSection({
       <LinkParentModal
         key={modalSession}
         open={isModalOpen}
+        childId={childId}
         childName={childName}
         onClose={() => setIsModalOpen(false)}
+        onSuccess={handleInvitationSuccess}
       />
     </>
   );

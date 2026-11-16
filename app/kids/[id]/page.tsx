@@ -199,6 +199,7 @@ async function KidProfileContent({ params }: KidProfilePageProps) {
                 <span className="text-white">{kidProfilePageDataBase.daySummaryLabel}</span>
               </button>
               <KidParentsSection
+                childId={profile.id}
                 childName={profile.name}
                 sectionLabel={kidProfilePageDataBase.parentsSectionLabel}
                 linkAnotherParentLabel={kidProfilePageDataBase.linkAnotherParentLabel}

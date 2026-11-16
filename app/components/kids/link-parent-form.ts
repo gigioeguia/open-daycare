@@ -33,6 +33,7 @@ export const linkParentFormLabels = {
   invitationCode: "CÓDIGO DE INVITACIÓN",
   expiresIn: "Vence en 7 días",
   submit: "Enviar invitación",
+  submitting: "Enviando invitación...",
 };
 
 export const linkParentFormPlaceholders = {
