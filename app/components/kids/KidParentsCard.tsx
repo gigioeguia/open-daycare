@@ -15,15 +15,23 @@ export function KidParentsCard({
   parents,
   onLinkAnotherParent,
 }: KidParentsCardProps) {
+  const hasLinkedParents = parents.length > 0;
+
   return (
     <div className="rounded-2xl border border-[#ECE0D0] bg-[#FFFDF9] p-[16px_18px]">
       <div className="mb-3.5 text-[12.5px] font-extrabold tracking-[0.8px] text-[#8A7C6D]">
         {sectionLabel}
       </div>
       <div className="flex flex-col gap-3.5">
-        {parents.map((parent) => (
-          <LinkedParentItem key={parent.id} parent={parent} />
-        ))}
+        {hasLinkedParents ? (
+          parents.map((parent) => (
+            <LinkedParentItem key={parent.id} parent={parent} />
+          ))
+        ) : (
+          <p className="m-0 text-[14.5px] text-[#94887B]">
+            Sin padres vinculados.
+          </p>
+        )}
         <button
           type="button"
           onClick={onLinkAnotherParent}
