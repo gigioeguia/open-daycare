@@ -1,14 +1,14 @@
-import type { Post } from "./feed-data";
+import type { FeedPost } from "./feed-types";
 import { Avatar } from "./Avatar";
 import { CategoryBadge } from "./CategoryBadge";
 import { MegaphoneIcon } from "./icons/MegaphoneIcon";
 
 type PostHeaderProps = {
-  post: Post;
+  post: FeedPost;
 };
 
 export function PostHeader({ post }: PostHeaderProps) {
-  const isAnnouncement = post.category === "announcement";
+  const isAnnouncement = post.type === "announcement";
 
   return (
     <div className="mb-3.5 flex items-center gap-3">
@@ -26,13 +26,13 @@ export function PostHeader({ post }: PostHeaderProps) {
       )}
       <div className="flex-1">
         <div className="font-(family-name:--font-fredoka) text-[16.5px] font-semibold text-[#3F362E]">
-          {post.authorName}
+          {isAnnouncement ? "Anuncio general" : post.authorName}
         </div>
         <div className="text-[12.5px] text-[#A89A8B]">
-          {post.time} · {post.publishedBy}
+          {post.timeLabel} · {post.publishedByLabel}
         </div>
       </div>
-      <CategoryBadge category={post.category} />
+      <CategoryBadge type={post.type} />
     </div>
   );
 }
