@@ -1,15 +1,17 @@
 # OpenDayCare
 
-OpenDayCare es una app web (Next.js App Router) para la comunicación y gestión diaria de una sala de guardería. Actualmente implementa pantallas UI con datos ficticios, guiadas por especificaciones en `specs/` y referencias visuales en `references/`.
+OpenDayCare es una app web (Next.js App Router) para la comunicación y gestión diaria de una sala de guardería. La UI y los flujos se desarrollan de forma guiada por especificaciones en `specs/` y referencias visuales en `references/`, con integración progresiva a Supabase.
 
 ## Estado actual
 
-- **UI implementada (feed con datos ficticios + integración Supabase DB en `/`):**
-  - `/` — Feed de sala (SPEC 01, `specs/01-feed-home.md`): encabezado, composer, separador y publicaciones con datos ficticios, más sección de `todos` consultada desde Supabase.
-  - `/login` y `/activar-cuenta` — Pantallas de acceso y activación (SPEC 03, `specs/03-auth-login-activation-ui.md`).
-  - `/kids` y `/kids/[id]` — Listado y detalle de niños (SPEC 02, `specs/02-kids-screens-ui.md`).
-- **Specs disponibles:** `01-feed-home.md` a `07-core-db-foundation-migrations.md` en `specs/` (incluye specs de modales y fundación de DB).
-- **Supabase / Base de datos:** existe migración inicial en `supabase/migrations/20261115202917_create_core_foundation.sql` (enums/tablas core y bootstrap de perfil auth). La app **ya tiene integración de Supabase** vía clientes propios en `utils/supabase/` (cliente de servidor para RSC y cliente de navegador). Hay schema de referencia externo en `docs` (`/datos/openCode/07-DB-Schema/opendaycare-database-schema.md`).
+- **Rutas implementadas (UI + integración parcial a Supabase):**
+  - `/` — Feed de sala (SPEC 01): encabezado, composer, separador y publicaciones con datos ficticios, más sección de ejemplo consultada desde Supabase (`todos`) y carga de perfil autenticado.
+  - `/login` y `/activar-cuenta` — Pantallas de acceso y activación de cuenta (SPEC 03, SPEC 14).
+  - `/kids` y `/kids/[id]` — Listado y detalle de niños (SPEC 02, SPEC 10, SPEC 11) con datos obtenidos vía helpers de Supabase.
+- **Autenticación y protección de rutas:** `proxy.ts` (raíz) + `utils/supabase/proxy.ts` refrescan sesión y aplican redirecciones entre rutas protegidas y rutas públicas de auth (`/login`, `/activar-cuenta`) (SPEC 09).
+- **Invitaciones:** utilidades en `utils/invitations.ts` y dependencia `resend` para flujos de invitación/vinculación/activación según specs (p. ej. SPEC 12, SPEC 13, SPEC 14).
+- **Specs disponibles:** `specs/01-feed-home.md` a `specs/14-validacion-invitacion-activar-cuenta.md` (UI, modales, auth/protección, integración DB/kids e invitaciones).
+- **Base de datos / Supabase:** migraciones en `supabase/migrations/` (fundación core, seed de usuarios de prueba de dominio e invitaciones). Schema de referencia externo: `/datos/openCode/07-DB-Schema/opendaycare-database-schema.md` (mantener alineado con migraciones y app).
 - **Automatización:** workflow en `.github/workflows/opencode.yml`.
 
 ## Stack
@@ -18,20 +20,24 @@ OpenDayCare es una app web (Next.js App Router) para la comunicación y gestión
 - TypeScript (strict)
 - Tailwind CSS `4.3.3`
 - ESLint (`eslint-config-next`)
-- `@supabase/ssr` (clientes Supabase para servidor y navegador)
+- Supabase: `@supabase/ssr`, `@supabase/supabase-js`
+- Resend (`resend`) para envío de correos de invitación (según configuración)
 
 ## Estructura principal
 
 - `app/layout.tsx` — layout raíz, metadata y fuentes (`Fredoka`/`Nunito`).
-- `app/page.tsx` — home/feed.
-- `app/login/page.tsx`, `app/activar-cuenta/page.tsx` — pantallas de autenticación/activación (UI).
+- `app/page.tsx` — home/feed (UI + consultas Supabase).
+- `app/login/page.tsx`, `app/activar-cuenta/page.tsx` — pantallas de autenticación/activación.
 - `app/kids/page.tsx`, `app/kids/[id]/page.tsx` — pantallas de niños.
 - `app/components/` — componentes UI (`feed/`, `auth/`, `kids/`, `shell/`).
 - `app/globals.css` — estilos globales/base visual.
-- `utils/supabase/` — clientes Supabase (`server.ts`, `client.ts`, `middleware.ts`).
-- `specs/` — especificaciones del producto y configuración spec-driven.
+- `proxy.ts` — protección/redirección de rutas y refresco de sesión.
+- `utils/supabase/` — integración Supabase (`server.ts`, `client.ts`, `proxy.ts`, helpers de perfil/kids).
+- `utils/invitations.ts` — utilidades de invitaciones.
 - `supabase/migrations/` — migraciones SQL versionadas.
+- `specs/` — especificaciones del producto y configuración spec-driven (`.spec-config.yml`).
 - `references/` — plantillas/mockups y capturas de referencia.
+- `public/` — assets estáticos.
 
 ## Desarrollo
 
@@ -44,6 +50,17 @@ npm run dev
 
 Abrir [http://localhost:3000](http://localhost:3000).
 
+## Variables de entorno
+
+El repo incluye `,env`, `,env.template` y `.env.local` para configuración local (nota: algunos archivos usan nombres con coma según la convención actual del repo). No commitear secretos reales.
+
+Variables relevantes (ver `,env.template`):
+- Supabase (app): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+- UI (si aplica): `NEXT_PUBLIC_LOGIN_DEFAULT_EMAIL`
+- Supabase (scripts/operaciones, si aplica): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+- Invitaciones/correo (si aplica): `RESEND_API_KEY`, `INVITATION_FROM_EMAIL`, `INVITATION_FROM_NAME`, `NEXT_PUBLIC_SITE_URL`
+- Datos de prueba/seed: placeholders `TEST_*` y `SUPBASE_DB_PASSWORD` (nombre según plantilla actual)
+
 ## Comandos
 
 - `npm run dev` — servidor de desarrollo.
@@ -55,6 +72,5 @@ Abrir [http://localhost:3000](http://localhost:3000).
 ## Notas
 
 - No hay suite de tests automatizados configurada actualmente.
-- Variables de entorno locales: el repo incluye `,env` y `,env.template` (nombres con coma). `,env.template` contiene placeholders; no commitear secretos reales. Para Supabase se requieren `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
-- El schema/diseño objetivo de base de datos debe mantenerse alineado con `docs/opendaycare-database-schema.md`, `supabase/migrations/` y las specs correspondientes.
-- Para cambios guiados, ver `specs/.spec-config.yml` y `AGENTS.md` (flujo `/spec` y `/spec-impl`, convenciones y tooling del proyecto).
+- `next.config.ts` usa `cacheComponents`, `partialPrefetching` y configuración de Turbopack para CSS; tener en cuenta las implicaciones de acceso dinámico (`cookies()`/`headers()`) en App Router.
+- Para cambios guiados, ver `specs/.spec-config.yml` y `AGENTS.md` (flujo `/spec` y `/spec-impl`, convenciones, tooling y notas de Supabase/Next.js).

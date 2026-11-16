@@ -19,40 +19,48 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Project facts
 - Next.js `16.4.6` App Router (`app/`) with React `19.3.0`, TypeScript strict, Tailwind CSS `4.3.3`.
 - Entrypoints: `app/layout.tsx` (root layout/metadata, Fredoka/Nunito fonts) and `app/page.tsx` (home `/` feed). Global styles: `app/globals.css` (`@import "tailwindcss"`).
-- UI actual (feed con datos ficticios + integración parcial Supabase DB en `/`): 
-  - `/` — feed de sala (componentes en `app/components/feed/`, datos en `feed-data.ts`).
+- UI actual (implementación guiada por specs, con integración parcial a Supabase en rutas de feed/kids/auth): 
+  - `/` — feed de sala (componentes en `app/components/feed/`, datos en `feed-data.ts`); incluye consulta de ejemplo a Supabase (`todos`) y resolución de perfil autenticado.
   - `/login` — pantalla de acceso (`app/components/auth/`).
   - `/activar-cuenta` — pantalla de activación de cuenta (`app/components/auth/`).
-  - `/kids` y `/kids/[id]` — listado y detalle de niños (`app/components/kids/`, `app/components/shell/`).
+  - `/kids` y `/kids/[id]` — listado y detalle de niños (`app/components/kids/`, `app/components/shell/`), con datos/perfil obtenidos vía utilidades Supabase según specs implementadas.
+- **Protección de rutas:** `proxy.ts` (raíz) usa `utils/supabase/proxy.ts` (`updateSession`) para refrescar sesión y redirigir según autenticación (`/login`, `/activar-cuenta` como rutas públicas de auth).
 - Path alias: `@/*` → repo root (`tsconfig.json`).
 - `next.config.ts`: `cacheComponents`, `partialPrefetching`, `experimental.agentFeedback`, y `turbopack.rules` para `*.css` con `@tailwindcss/turbopack`.
 - `eslint.config.mjs`: presets `eslint-config-next` (core-web-vitals + TypeScript) e ignores adicionales para `references/**`.
-- Especificaciones funcionales/UI en `specs/` (`01-feed-home.md` a `07-core-db-foundation-migrations.md`, `.spec-config.yml`).
+- `proxy.ts`: protección/redirección de rutas autenticadas y públicas de auth (matcher excluye assets/estáticos de Next).
+- Especificaciones funcionales/UI en `specs/` (`01-feed-home.md` a `14-validacion-invitacion-activar-cuenta.md`, `.spec-config.yml`).
 
 ## Structure (high level)
 - `app/` — rutas App Router y UI.
   - `app/page.tsx`, `app/login/page.tsx`, `app/activar-cuenta/page.tsx`, `app/kids/page.tsx`, `app/kids/[id]/page.tsx`.
   - `app/components/feed/`, `app/components/auth/`, `app/components/kids/`, `app/components/shell/` — componentes y datos de UI.
+- `utils/` — utilidades de dominio e integración.
+  - `utils/supabase/` — clientes/helpers Supabase (`server.ts`, `client.ts`, `proxy.ts`, `get-current-user-profile.ts`, `get-kids-list.ts`, `get-kid-profile.ts`).
+  - `utils/invitations.ts` — lógica relacionada con invitaciones.
+- `proxy.ts` — protección de rutas/sesión en el borde de la app (Next.js).
 - `references/pantallas/`, `references/screenshots/` — mockups/plantillas de referencia visual (si existen).
 - `specs/` — especificaciones y configuración del flujo spec-driven.
-- `supabase/migrations/` — migraciones SQL versionadas (p. ej. fundación core).
+- `supabase/migrations/` — migraciones SQL versionadas (fundación core, seeds/usuarios de prueba, invitaciones, etc.).
 - `.github/workflows/` — workflows de CI/automatización (p. ej. `opencode.yml`).
 - `public/` — assets estáticos.
-- `,env`, `,env.template` — variables de entorno locales/plantilla (nombres con coma según repo actual).
+- `,env`, `,env.template`, `.env.local` — variables de entorno locales/plantilla (algunos nombres con coma según convención actual del repo).
 - `skills-lock.json` — lock de skills instaladas.
 - `.playwright/`, `.playwright-mcp/`, `playwright/` — artefactos/sesiones de Playwright (no usar como destino principal para capturas nuevas salvo contexto explícito).
 
 ## Supabase & database
-- **Estado:** migraciones iniciadas en `supabase/migrations/` (ej. `20261115202917_create_core_foundation.sql`: enums/tablas core y trigger de bootstrap de perfil auth). **La app ya tiene integración Supabase vía paquetes propios** en `utils/supabase/` (cliente de servidor para RSC y cliente de navegador para componentes/clientes).
+- **Estado:** migraciones en `supabase/migrations/` (p. ej. `20261115202917_create_core_foundation.sql`, `20261115213535_seed_test_users_domain.sql`, `20261116120000_create_invitations.sql`). La app integra Supabase mediante `@supabase/ssr`/`@supabase/supabase-js` y utilidades propias en `utils/supabase/`.
 - **Utilidades creadas (usar estas en vez de instanciar clientes directamente):**
-  - `utils/supabase/server.ts` — `createClient(cookieStore)` para Server Components / Server Actions. Usa `createServerClient` de `@supabase/ssr` con `cookies.getAll()`/`setAll`; `setAll` está protegido con try/catch porque en Server Components no siempre puede escribir cookies.
-  - `utils/supabase/client.ts` — `createClient()` para componentes de cliente/navegador. Usa `createBrowserClient` de `@supabase/ssr`.
-  - `utils/supabase/middleware.ts` — `createClient()` para middleware (misma firma que client.ts; revisar si se requiere cliente de servidor con `request.cookies` según el flujo de sesión).
-- **Variables de entorno requeridas:** `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (definidas en `,env.template` / `,env`). No exponer `SUPABASE_DB_PASSWORD` ni service role key en el cliente.
-- **Next.js 16 App Router + `cookies()`:** acceder a `cookies()`/`headers()` durante prerenderizado estático bloquea la página a menos que se envuelva en `<Suspense>` o se use `export const dynamic = "force-dynamic"` (incompatible con `nextConfig.cacheComponents`, ver `next.config.ts`). Preferir `<Suspense fallback={...}>` alrededor del acceso dinámico.
-- **Schema de referencia (externo):** `docs` reference → `/datos/openCode/07-DB-Schema` (`opendaycare-database-schema.md`). Define tablas/enums para PostgreSQL/Supabase (p. ej. `daycares`, `users` vinculado a `auth.users`, `rooms`, `children`, `parent_children`, `invitations`, posts, etc.). Tratar como diseño objetivo; mantener alineación entre doc, migraciones y app.
+  - `utils/supabase/server.ts` — `createClient(cookieStore)` para Server Components / Server Actions (RSC). Usa `createServerClient` con `cookies.getAll()`/`setAll`; `setAll` está protegido con try/catch.
+  - `utils/supabase/client.ts` — `createClient()` para componentes de cliente/navegador (`createBrowserClient`).
+  - `utils/supabase/proxy.ts` — `updateSession(request)` para refrescar sesión/cookies en `proxy.ts` (raíz) y obtener usuario autenticado de forma segura.
+  - `utils/supabase/get-current-user-profile.ts`, `get-kids-list.ts`, `get-kid-profile.ts` — helpers de consulta para datos de usuario/kids usados por la UI.
+- **Protección de sesión/rutas:** `proxy.ts` (raíz) + `utils/supabase/proxy.ts` gestionan sesión y redirecciones entre rutas protegidas y públicas de auth (`/login`, `/activar-cuenta`).
+- **Invitaciones/correo:** `utils/invitations.ts` y dependencia `resend` soportan flujos de invitación/activación según specs; requiere variables de entorno de invitación/Resend cuando aplique.
+- **Variables de entorno:** requeridas para Supabase en cliente/servidor: `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Para operaciones/scripts o flujos específicos pueden requerirse `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `INVITATION_FROM_EMAIL`, `INVITATION_FROM_NAME`, `NEXT_PUBLIC_SITE_URL` (ver `,env.template` / `.env.local` / `,env`). No exponer service role key ni secretos en el cliente.
+- **Next.js 16 App Router + `cookies()`/acceso dinámico:** acceder a `cookies()`/`headers()` durante prerenderizado estático puede requerir `<Suspense>` o estrategia dinámica; `export const dynamic = "force-dynamic"` es incompatible con `cacheComponents` (`next.config.ts`). Preferir `<Suspense fallback={...}>` alrededor del acceso dinámico cuando corresponda.
+- **Schema de referencia (externo):** `docs` reference → `/datos/openCode/07-DB-Schema` (`opendaycare-database-schema.md`). Define tablas/enums objetivo para PostgreSQL/Supabase (p. ej. `daycares`, `users`, `rooms`, `children`, `parent_children`, `invitations`, posts, etc.). Mantener alineación entre doc, migraciones y app.
 - **Convenciones del schema:** PK `uuid`, `created_at`/`updated_at` `timestamptz`, valores persistidos en inglés, etiquetas de UI en español en la capa de presentación.
-- **Entorno:** `,env.template` incluye `SUPBASE_DB_PASSWORD` (placeholder, nombre según repo actual). Al implementar, validar nombres reales de variables requeridas por Supabase/Next.js y no exponer secretos.
 - **MCP/skills disponibles para tareas Supabase:** usar el server `supabase` en Code Mode (`tools.supabase.*`) y cargar skills `supabase` y/o `supabase-postgres-best-practices` antes de trabajar con DB, Auth, Storage, RLS, migraciones, Edge Functions, tipos, logs o performance Postgres.
 
 ## References & tooling
