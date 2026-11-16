@@ -8,6 +8,7 @@ export type KidListItem = {
   initial: string;
   avatarBackground: string;
   avatarColor: string;
+  roomName?: string;
   badgeLabel?: string;
   badgeTone?: KidListBadgeTone;
   showChevron?: boolean;
