@@ -1,7 +1,9 @@
 import { Suspense } from "react";
 import { SunMarkIcon } from "../components/auth/SunMarkIcon";
 import { ActivationForm } from "../components/auth/ActivationForm";
+import { InvalidInvitationState } from "../components/auth/InvalidInvitationState";
 import { activateAccountPageData } from "../components/auth/auth-data";
+import { validateActivationInvitation } from "./validation";
 
 export const instant = false;
 
@@ -14,6 +16,10 @@ async function ActivateAccountContent({ searchParams }: ActivateAccountPageProps
   const params = (await searchParams) ?? {};
   const initialCode = typeof params.code === "string" ? params.code : undefined;
   const initialEmail = typeof params.email === "string" ? params.email : undefined;
+  const { valid: isInvitationValid } = await validateActivationInvitation(
+    initialCode,
+    initialEmail,
+  );
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#FBF4EC] p-6 sm:p-10">
@@ -29,11 +35,15 @@ async function ActivateAccountContent({ searchParams }: ActivateAccountPageProps
           {data.subtitle}
         </p>
 
-        <ActivationForm
-          data={data}
-          initialCode={initialCode}
-          initialEmail={initialEmail}
-        />
+        {isInvitationValid ? (
+          <ActivationForm
+            data={data}
+            initialCode={initialCode}
+            initialEmail={initialEmail}
+          />
+        ) : (
+          <InvalidInvitationState />
+        )}
       </div>
     </main>
   );
