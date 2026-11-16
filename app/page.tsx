@@ -1,41 +1,115 @@
 import { Suspense } from "react";
-import { cookies } from "next/headers";
 import { connection } from "next/server";
-import { createClient } from "@/utils/supabase/server";
-import { getCurrentUserProfile } from "@/utils/supabase/get-current-user-profile";
 import { FeedShell } from "./components/feed/FeedShell";
-import { feedPageData } from "./components/feed/feed-data";
+import type { FeedPageViewData } from "./components/feed/feed-types";
+import { getCurrentUserContext } from "@/utils/supabase/get-current-user-context";
+import { getDaycareChildrenOptions, getFeedPostsForContext } from "@/utils/supabase/feed";
 
-async function TodosSection() {
-  const cookieStore = await cookies();
-  const supabase = createClient(cookieStore);
+const navItems: FeedPageViewData["navItems"] = [
+  { id: "feed", label: "Feed", active: true },
+  { id: "children", label: "Niños", active: false },
+  { id: "notices", label: "Avisos", active: false },
+  { id: "account", label: "Mi cuenta", active: false },
+];
 
-  const { data: todos } = await supabase.from("todos").select();
+function getRoleLabel(role: string): string {
+  switch (role) {
+    case "admin":
+      return "Administradora";
+    case "staff":
+      return "Personal";
+    case "parent":
+      return "Familiar";
+    default:
+      return role;
+  }
+}
 
-  if (!todos || todos.length === 0) return null;
+function getGreetingName(fullName: string): string {
+  const firstName = fullName.trim().split(/\s+/)[0];
+  return firstName || fullName || "Usuario";
+}
 
-  return (
-    <section className="mx-auto w-full max-w-[760px] px-5 pb-10 sm:px-8 lg:px-10">
-      <h2 className="mb-3 text-lg font-semibold">Todos</h2>
-      <ul className="list-disc pl-5">
-        {todos.map((todo) => (
-          <li key={todo.id}>{todo.name}</li>
-        ))}
-      </ul>
-    </section>
-  );
+function getInitial(name: string): string {
+  return (name.trim().charAt(0) || "U").toUpperCase();
+}
+
+function buildFeedMeta(role: string, roomName: string | null, postCount: number): string {
+  if (role === "parent") {
+    return `${postCount} ${postCount === 1 ? "publicación" : "publicaciones"} para tu familia`;
+  }
+  const roomLabel = roomName ? ` · ${roomName}` : "";
+  return `${postCount} ${postCount === 1 ? "publicación" : "publicaciones"}${roomLabel}`;
 }
 
 async function HomeContent() {
   await connection();
-  const currentUser = await getCurrentUserProfile();
+  const context = await getCurrentUserContext();
 
-  return (
-    <>
-      <FeedShell data={feedPageData} user={currentUser ?? undefined} />
-      <TodosSection />
-    </>
-  );
+  if (!context) {
+    const fallbackData: FeedPageViewData = {
+      orgLabel: "GUARDERÍA",
+      greeting: "Bienvenido/a",
+      meta: "Iniciá sesión para ver el feed",
+      dayLabel: "PUBLICACIONES",
+      composerPrompt: "Compartí un momento…",
+      user: {
+        name: "Usuario",
+        role: "Invitado",
+        initial: "U",
+        avatarBackgroundColor: "#F2937A",
+        avatarColor: "#FFFFFF",
+      },
+      navItems,
+      posts: [],
+      currentRoomId: null,
+      currentRoomName: null,
+      canCreatePost: false,
+    };
+
+    return <FeedShell data={fallbackData} childrenOptions={[]} />;
+  }
+
+  let posts: Awaited<ReturnType<typeof getFeedPostsForContext>> = [];
+  let childrenOptions: Awaited<ReturnType<typeof getDaycareChildrenOptions>> = [];
+  let loadError = false;
+
+  try {
+    [posts, childrenOptions] = await Promise.all([
+      getFeedPostsForContext(context),
+      context.role === "staff" || context.role === "admin"
+        ? getDaycareChildrenOptions(context.daycareId)
+        : Promise.resolve([]),
+    ]);
+  } catch {
+    loadError = true;
+  }
+
+  const roomLabel = context.currentRoomName ?? "Sala";
+  const orgLabel = `${context.daycareName.toUpperCase()} · ${roomLabel.toUpperCase()}`;
+  const data: FeedPageViewData = {
+    orgLabel,
+    greeting: `Buenas, ${getGreetingName(context.fullName)}`,
+    meta: loadError
+      ? "No pudimos cargar las publicaciones"
+      : buildFeedMeta(context.role, context.currentRoomName, posts.length),
+    dayLabel: "PUBLICACIONES",
+    composerPrompt: "Compartí un momento…",
+    user: {
+      name: context.fullName,
+      role: `${getRoleLabel(context.role)} · ${roomLabel}`,
+      initial: getInitial(context.fullName),
+      avatarBackgroundColor: "#F2937A",
+      avatarColor: "#FFFFFF",
+    },
+    navItems,
+    posts,
+    currentRoomId: context.currentRoomId,
+    currentRoomName: context.currentRoomName,
+    canCreatePost: context.role === "staff" || context.role === "admin",
+  };
+
+  return <FeedShell data={data} childrenOptions={childrenOptions} />;
 }
 
 export default function Home() {
@@ -45,4 +119,3 @@ export default function Home() {
     </Suspense>
   );
 }
-

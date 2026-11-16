@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import type { FeedPageData, NavItem } from "./feed-data";
+import { useMemo, useState } from "react";
 import { ComposerPrompt } from "./ComposerPrompt";
 import { CreatePostModal } from "./CreatePostModal";
 import { DaySection } from "./DaySection";
 import { FeedHeader } from "./FeedHeader";
 import { PostCard } from "./PostCard";
+import type { AudienceChildOption, FeedPageViewData, FeedPost } from "./feed-types";
 import { AppShell } from "../shell/AppShell";
 import type { ShellNavItem } from "../shell/Sidebar";
 import type { ShellUser } from "../shell/UserBadge";
@@ -16,11 +16,11 @@ import { HomeIcon } from "../shell/icons/HomeIcon";
 import { UserIcon } from "../shell/icons/UserIcon";
 
 type FeedShellProps = {
-  data: FeedPageData;
-  user?: ShellUser;
+  data: FeedPageViewData;
+  childrenOptions: AudienceChildOption[];
 };
 
-function getFeedNavIcon(id: NavItem["id"]) {
+function getFeedNavIcon(id: FeedPageViewData["navItems"][number]["id"]) {
   switch (id) {
     case "feed":
       return <HomeIcon />;
@@ -33,7 +33,7 @@ function getFeedNavIcon(id: NavItem["id"]) {
   }
 }
 
-function getFeedNavHref(id: NavItem["id"]) {
+function getFeedNavHref(id: FeedPageViewData["navItems"][number]["id"]) {
   switch (id) {
     case "feed":
       return "/";
@@ -46,31 +46,39 @@ function getFeedNavHref(id: NavItem["id"]) {
   }
 }
 
-export function FeedShell({ data, user }: FeedShellProps) {
+export function FeedShell({ data, childrenOptions }: FeedShellProps) {
   const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState<FeedPost | null>(null);
 
-  const navItems: ShellNavItem[] = data.navItems.map((item) => ({
-    id: item.id,
-    label: item.label,
-    href: getFeedNavHref(item.id),
-    active: item.active,
-    icon: getFeedNavIcon(item.id),
-  }));
+  const navItems: ShellNavItem[] = useMemo(
+    () =>
+      data.navItems.map((item) => ({
+        id: item.id,
+        label: item.label,
+        href: getFeedNavHref(item.id),
+        active: item.active,
+        icon: getFeedNavIcon(item.id),
+      })),
+    [data.navItems],
+  );
 
-  const shellUser: ShellUser = user ?? {
+  const shellUser: ShellUser = {
     name: data.user.name,
     role: data.user.role,
     initial: data.user.initial,
-    avatarBackgroundColor: "#F2937A",
-    avatarColor: "#FFFFFF",
+    avatarBackgroundColor: data.user.avatarBackgroundColor ?? "#F2937A",
+    avatarColor: data.user.avatarColor ?? "#FFFFFF",
   };
+
+  const roomLabel = data.currentRoomName ?? "Sala";
+  const canCreatePost = data.canCreatePost;
 
   return (
     <AppShell
-      roomLabel="Sala Lunas"
+      roomLabel={roomLabel}
       brandHref="/"
       navItems={navItems}
-      onNewPostClick={() => setIsCreatePostModalOpen(true)}
+      onNewPostClick={canCreatePost ? () => setIsCreatePostModalOpen(true) : undefined}
       user={shellUser}
       contentClassName="mx-auto w-full max-w-[760px] px-5 py-8 sm:px-8 lg:px-10 lg:py-[34px] lg:pb-20"
     >
@@ -79,20 +87,47 @@ export function FeedShell({ data, user }: FeedShellProps) {
         greeting={data.greeting}
         meta={data.meta}
       />
-      <ComposerPrompt
-        userInitial={data.user.initial}
-        prompt={data.composerPrompt}
-      />
+      <ComposerPrompt userInitial={data.user.initial} prompt={data.composerPrompt} />
       <DaySection label={data.dayLabel} />
-      <div className="flex flex-col gap-4">
-        {data.posts.map((post) => (
-          <PostCard key={post.id} post={post} />
-        ))}
-      </div>
-      <CreatePostModal
-        open={isCreatePostModalOpen}
-        onClose={() => setIsCreatePostModalOpen(false)}
-      />
+
+      {data.posts.length === 0 ? (
+        <div className="rounded-[20px] border border-[#ECE0D0] bg-[#FFFDF9] p-6 text-[15px] text-[#94887B]">
+          No hay publicaciones para mostrar.
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4">
+          {data.posts.map((post) => (
+            <PostCard
+              key={post.id}
+              post={post}
+              onEdit={post.canManage ? (selectedPost) => setEditingPost(selectedPost) : undefined}
+            />
+          ))}
+        </div>
+      )}
+
+      {canCreatePost && isCreatePostModalOpen ? (
+        <CreatePostModal
+          key="create-post-modal"
+          open={isCreatePostModalOpen}
+          onClose={() => setIsCreatePostModalOpen(false)}
+          childrenOptions={childrenOptions}
+          currentRoomName={data.currentRoomName}
+          mode="create"
+        />
+      ) : null}
+
+      {editingPost ? (
+        <CreatePostModal
+          key={`edit-post-modal-${editingPost.id}`}
+          open={Boolean(editingPost)}
+          onClose={() => setEditingPost(null)}
+          childrenOptions={childrenOptions}
+          currentRoomName={data.currentRoomName}
+          mode="edit"
+          post={editingPost}
+        />
+      ) : null}
     </AppShell>
   );
 }
