@@ -67,7 +67,7 @@ export const loginPageData: LoginPageData = {
     label: "EMAIL",
     type: "email",
     name: "email",
-    value: "caro@opendaycare.com",
+    value: process.env.NEXT_PUBLIC_LOGIN_DEFAULT_EMAIL ?? "",
   },
   passwordField: {
     id: "login-password",
