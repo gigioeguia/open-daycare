@@ -33,12 +33,28 @@ function getFeedNavIcon(id: FeedPageViewData["navItems"][number]["id"]) {
   }
 }
 
-function getFeedNavHref(id: FeedPageViewData["navItems"][number]["id"]) {
+function getFeedNavHref(
+  id: FeedPageViewData["navItems"][number]["id"],
+  area: "staff" | "family",
+) {
+  if (area === "family") {
+    switch (id) {
+      case "feed":
+        return "/family";
+      case "children":
+        return "/family/kids";
+      case "notices":
+        return "#";
+      case "account":
+        return "#";
+    }
+  }
+
   switch (id) {
     case "feed":
-      return "/";
+      return "/staff";
     case "children":
-      return "/kids";
+      return "/staff/kids";
     case "notices":
       return "#";
     case "account":
@@ -49,17 +65,18 @@ function getFeedNavHref(id: FeedPageViewData["navItems"][number]["id"]) {
 export function FeedShell({ data, childrenOptions }: FeedShellProps) {
   const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<FeedPost | null>(null);
+  const area = data.area ?? "staff";
 
   const navItems: ShellNavItem[] = useMemo(
     () =>
       data.navItems.map((item) => ({
         id: item.id,
         label: item.label,
-        href: getFeedNavHref(item.id),
+        href: getFeedNavHref(item.id, area),
         active: item.active,
         icon: getFeedNavIcon(item.id),
       })),
-    [data.navItems],
+    [area, data.navItems],
   );
 
   const shellUser: ShellUser = {
@@ -76,9 +93,10 @@ export function FeedShell({ data, childrenOptions }: FeedShellProps) {
   return (
     <AppShell
       roomLabel={roomLabel}
-      brandHref="/"
+      brandHref={area === "family" ? "/family" : "/staff"}
       navItems={navItems}
       onNewPostClick={canCreatePost ? () => setIsCreatePostModalOpen(true) : undefined}
+      showNewPost={area === "staff"}
       user={shellUser}
       contentClassName="mx-auto w-full max-w-[760px] px-5 py-8 sm:px-8 lg:px-10 lg:py-[34px] lg:pb-20"
     >

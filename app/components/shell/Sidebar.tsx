@@ -19,6 +19,7 @@ type SidebarProps = {
   newPostLabel?: string;
   newPostHref?: string;
   onNewPostClick?: () => void;
+  showNewPost?: boolean;
   navItems: ShellNavItem[];
   user: ShellUser;
   className?: string;
@@ -30,6 +31,7 @@ export function Sidebar({
   newPostLabel = "Nueva publicación",
   newPostHref = "#",
   onNewPostClick,
+  showNewPost = true,
   navItems,
   user,
   className = "",
@@ -55,21 +57,23 @@ export function Sidebar({
         </div>
       </Link>
 
-      {onNewPostClick ? (
-        <button
-          type="button"
-          onClick={onNewPostClick}
-          className={newPostClassName}
-        >
-          <PlusIcon />
-          {newPostLabel}
-        </button>
-      ) : (
-        <a href={newPostHref} className={newPostClassName}>
-          <PlusIcon />
-          {newPostLabel}
-        </a>
-      )}
+      {showNewPost ? (
+        onNewPostClick ? (
+          <button
+            type="button"
+            onClick={onNewPostClick}
+            className={newPostClassName}
+          >
+            <PlusIcon />
+            {newPostLabel}
+          </button>
+        ) : (
+          <a href={newPostHref} className={newPostClassName}>
+            <PlusIcon />
+            {newPostLabel}
+          </a>
+        )
+      ) : null}
 
       <nav className="flex flex-1 flex-col gap-1">
         {navItems.map((item) => (

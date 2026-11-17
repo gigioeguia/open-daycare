@@ -15,6 +15,8 @@ export type FeedNavItem = {
   active: boolean;
 };
 
+export type FeedArea = "staff" | "family";
+
 export type FeedShellUser = {
   name: string;
   role: string;
@@ -60,6 +62,7 @@ export type FeedPageViewData = {
   currentRoomId: string | null;
   currentRoomName: string | null;
   canCreatePost: boolean;
+  area?: FeedArea;
 };
 
 export type AudienceChildOption = {

@@ -142,6 +142,36 @@ export async function getKidLinkedParents(
 export async function getKidProfileById(
   childId: string,
 ): Promise<KidProfileRecord | null> {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+
+  let role: "admin" | "staff" | "parent" | null = null;
+  if (authUser) {
+    const { data: profile } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", authUser.id)
+      .maybeSingle();
+    role = (profile?.role as "admin" | "staff" | "parent" | null) ?? null;
+  }
+
+  if (role === "parent" && authUser) {
+    const { data: link } = await supabase
+      .from("parent_children")
+      .select("id")
+      .eq("parent_id", authUser.id)
+      .eq("child_id", childId)
+      .maybeSingle();
+
+    if (!link) {
+      return null;
+    }
+  }
+
   const child = await getKidProfileChildById(childId);
 
   if (!child) {
