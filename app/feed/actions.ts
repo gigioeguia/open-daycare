@@ -274,6 +274,8 @@ export async function createPostAction(
     }
 
     revalidatePath("/");
+    revalidatePath("/staff");
+    revalidatePath("/family");
     return { ok: true, postId };
   } catch {
     await cleanupUploadedPaths(uploadedPaths);
@@ -515,6 +517,8 @@ export async function updatePostAction(
     }
 
     revalidatePath("/");
+    revalidatePath("/staff");
+    revalidatePath("/family");
     return { ok: true, postId };
   } catch {
     await cleanupUploadedPaths(uploadedPaths);
@@ -563,5 +567,7 @@ export async function deletePostAction(postId: string): Promise<PostMutationResu
   }
 
   revalidatePath("/");
+  revalidatePath("/staff");
+  revalidatePath("/family");
   return { ok: true, postId };
 }

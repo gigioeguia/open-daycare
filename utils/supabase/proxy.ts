@@ -4,6 +4,18 @@ import { NextResponse, type NextRequest } from "next/server";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
+export type AppUserRole = "admin" | "staff" | "parent";
+
+export function getRoleLandingPath(role: AppUserRole): string {
+  return role === "parent" ? "/family" : "/staff";
+}
+
+function getClaimUserId(claims: Record<string, unknown> | null): string | null {
+  if (!claims) return null;
+  const sub = claims.sub;
+  return typeof sub === "string" ? sub : null;
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -38,7 +50,26 @@ export async function updateSession(request: NextRequest) {
   // supabase.auth.getClaims(). A simple mistake could make it very hard to debug
   // issues with users being randomly logged out.
   const { data } = await supabase.auth.getClaims();
-  const user = data?.claims ?? null;
+  const user = (data?.claims as Record<string, unknown> | undefined) ?? null;
+
+  let role: AppUserRole | null = null;
+  const userId = getClaimUserId(user);
+  if (userId) {
+    const { data: profile } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", userId)
+      .maybeSingle();
+
+    const profileRole = profile?.role;
+    if (
+      profileRole === "admin" ||
+      profileRole === "staff" ||
+      profileRole === "parent"
+    ) {
+      role = profileRole;
+    }
+  }
 
   const redirect = (url: string | URL) => {
     const redirectResponse = NextResponse.redirect(
@@ -59,5 +90,5 @@ export async function updateSession(request: NextRequest) {
     return redirectResponse;
   };
 
-  return { supabase, response: supabaseResponse, user, redirect };
+  return { supabase, response: supabaseResponse, user, role, redirect };
 }

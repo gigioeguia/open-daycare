@@ -41,5 +41,19 @@ export async function signIn(
     };
   }
 
-  redirect("/");
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+
+  if (!authUser) {
+    redirect("/staff");
+  }
+
+  const { data: profile } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", authUser.id)
+    .maybeSingle();
+
+  redirect(profile?.role === "parent" ? "/family" : "/staff");
 }

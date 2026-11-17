@@ -1,0 +1,61 @@
+schema: spec-driven
+
+context: |
+  OpenDayCare es una aplicación web (Next.js App Router + Supabase) para que una guardería
+  gestione su operación diaria y comunique a las familias. El staff publica actualizaciones
+  por sala/niños (comidas, siestas, actividades, logros, fotos, anuncios) y los padres ven
+  un feed y la información de sus hijos según vínculos/permisos.
+
+  Restricciones y convenciones del proyecto:
+  - Stack: Next.js 16.4.x (App Router, `app/`), React 19, TypeScript strict, Tailwind CSS 4.
+    Alias `@/*` -> raíz. Config relevante: `cacheComponents`, `proxy.ts` para sesión/rutas.
+  - Código (nombres, variables, funciones, componentes, archivos técnicos) en inglés;
+    textos/comentarios de UI y documentación de specs en español cuando corresponda.
+  - UI fiel a referencias en `references/pantallas/` y `references/screenshots/` sin alterar
+    diseño/comportamiento salvo que la spec lo indique explícitamente.
+  - Supabase: usar helpers en `utils/supabase/` (`server.ts`, `client.ts`, `proxy.ts` y
+    consultas de dominio) en vez de instanciar clientes ad-hoc. Variables requeridas:
+    `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (secretos/service role
+    nunca en cliente). Esquema de referencia: `opendaycare-database-schema.md` (PK uuid,
+    `created_at`/`updated_at` timestamptz, valores persistidos en inglés).
+  - Base de datos: migraciones versionadas en `supabase/migrations/` (UTC `YYYYMMDDHHMMSS_*`);
+    cambios de schema/RLS/policies alineados al doc de referencia y validados con MCP/skills
+    de Supabase cuando aplique. No introducir RLS, tablas o triggers fuera del alcance definido.
+  - Flujo actual: specs numeradas en `specs/` (`specs/.spec-config.yml`: AutoCreateBranch true,
+    AutoCommitSteps false). No hay suite de tests automatizados configurada; validación mínima
+    con lint, typecheck y build cuando haya cambios de código.
+  - Evitar dependencias/infra nuevas sin spec o requerimiento explícito; eliminar código obsoleto
+    solo si no altera comportamiento.
+
+rules:
+  proposal:
+    - Mantener la propuesta concisa (objetivo, alcance y valor) y declarar explícitamente qué queda fuera de alcance.
+    - Indicar dependencias/prerrequisitos (specs previas, migraciones, schema, auth/RLS, variables de entorno).
+    - Alinear la propuesta con `opendaycare-database-schema.md`, `specs/`, `references/pantallas/` y convenciones existentes; no asumir backend, rutas o permisos no especificados.
+    - Señalar riesgos o impactos relevantes (seguridad/RLS, sesión, migraciones, compatibilidad con `cacheComponents`/render dinámico).
+
+  specs:
+    - Estructurar la spec con: Estado, Depende de, Fecha, Objetivo, Alcance (Incluye/Fuera de alcance), Modelo de datos, Plan de implementación, Criterios de aceptación, Decisiones tomadas y descartadas y Riesgos.
+    - Redactar criterios de aceptación como checklist verificable (`- [ ]`) y mantener "Fuera de alcance" explícito para evitar ambigüedad.
+    - Describir contratos concretos: rutas/archivos afectados, componentes/utilidades, tipos, tablas/ENUMs/constraints/RLS o flujos de auth según aplique.
+    - Mantener coherencia con el proyecto: UI/textos en español y código en inglés; respetar referencia visual, esquema de datos y helpers Supabase existentes.
+    - Para cambios de DB, detallar DDL/migración, orden de dependencias, verificaciones remotas/locales y efectos no deseados excluidos.
+
+  tasks:
+    - Dividir el trabajo en pasos pequeños y verificables (idealmente <= 2 horas), ordenados por dependencias.
+    - Cada tarea debe indicar archivos/áreas afectadas y su verificación (p. ej. lint, `npx tsc --noEmit`, build, inspección SQL/MCP, revisión visual contra referencia).
+    - Separar tareas de esquema/migración, lógica/datos y UI cuando aplique; incluir pasos explícitos para seeds, RLS/policies o protección de rutas si forman parte del alcance.
+    - No incluir tareas fuera de alcance (tests automatizados nuevos, refactors amplios, features no solicitadas) salvo que la spec lo requiera.
+
+operations:
+  apply:
+    guidance:
+      - Implementar solo lo definido en la spec/tareas; preservar patrones, estilo y estructura existentes del código.
+      - Para código Next.js/TS, validar con `npm run lint`, `npx tsc --noEmit` y `npm run build` cuando corresponda; reportar limitaciones si no es posible ejecutar.
+      - Para cambios Supabase/Postgres, seguir migraciones versionadas y helpers del proyecto; no exponer secretos y respetar RLS/esquema acordado.
+      - Verificar UI contra `references/pantallas/` o screenshots de referencia cuando el cambio sea visual.
+
+  archive:
+    guidance:
+      - Resumir resultado final: artefactos/specs implementados, migraciones aplicadas, archivos clave modificados y verificaciones ejecutadas.
+      - Registrar desviaciones, decisiones finales y trabajo pendiente/fuera de alcance que quede para futuras specs.

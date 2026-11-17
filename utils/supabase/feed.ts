@@ -97,7 +97,61 @@ export async function getFeedPostsForContext(
     throw error;
   }
 
-  const rows = (data ?? []) as unknown as PostRow[];
+  let rows = (data ?? []) as unknown as PostRow[];
+
+  if (context.role === "parent") {
+    const { data: links, error: linksError } = await supabase
+      .from("parent_children")
+      .select("child_id, child:children(room_id)")
+      .eq("parent_id", context.userId);
+
+    if (linksError) {
+      throw linksError;
+    }
+
+    type LinkRow = {
+      child_id: string;
+      child:
+        | { room_id: string | null }
+        | { room_id: string | null }[]
+        | null;
+    };
+
+    const linkedChildIds = new Set<string>();
+    const linkedRoomIds = new Set<string>();
+
+    for (const link of (links ?? []) as unknown as LinkRow[]) {
+      if (link.child_id) {
+        linkedChildIds.add(link.child_id);
+      }
+      const child = getRelationOne(link.child);
+      if (child?.room_id) {
+        linkedRoomIds.add(child.room_id);
+      }
+    }
+
+    rows = rows.filter((post) => {
+      const taggedChildIds = (post.post_children ?? [])
+        .map((row) => getRelationOne(row.child)?.id?.trim() ?? "")
+        .filter(Boolean);
+      const hasLinkedChild = taggedChildIds.some((id) => linkedChildIds.has(id));
+      if (hasLinkedChild) {
+        return true;
+      }
+
+      if (post.type === "announcement" && linkedRoomIds.has(post.room_id)) {
+        return true;
+      }
+
+      // Posts with no tagged children are treated as room-wide; show if in linked rooms.
+      if (taggedChildIds.length === 0 && linkedRoomIds.has(post.room_id)) {
+        return true;
+      }
+
+      return false;
+    });
+  }
+
   const allStoragePaths = rows.flatMap((post) =>
     (post.post_photos ?? []).map((photo) => photo.storage_path),
   );

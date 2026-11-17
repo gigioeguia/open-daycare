@@ -26,11 +26,23 @@ type UserProfileRow = {
     | null;
 };
 
+type ParentChildRoomRow = {
+  child:
+    | { room: { id: string; name: string } | { id: string; name: string }[] | null }
+    | { room: { id: string; name: string } | { id: string; name: string }[] | null }[]
+    | null;
+};
+
 function getDaycareName(
   daycare: { name: string } | { name: string }[] | null,
 ): string {
   if (!daycare) return "Guardería";
   return Array.isArray(daycare) ? daycare[0]?.name ?? "Guardería" : daycare.name;
+}
+
+function getRelationOne<T>(value: T | T[] | null): T | null {
+  if (!value) return null;
+  return Array.isArray(value) ? value[0] ?? null : value;
 }
 
 export async function getCurrentUserContext(): Promise<CurrentUserContext | null> {
@@ -56,15 +68,49 @@ export async function getCurrentUserContext(): Promise<CurrentUserContext | null
   }
 
   const typedProfile = profile as UserProfileRow;
+  let currentRoomId: string | null = null;
+  let currentRoomName: string | null = null;
 
-  const { data: rooms } = await supabase
-    .from("rooms")
-    .select("id, name")
-    .eq("daycare_id", typedProfile.daycare_id)
-    .order("name", { ascending: true });
+  if (typedProfile.role === "parent") {
+    const { data: links } = await supabase
+      .from("parent_children")
+      .select("child:children(room:rooms(id, name))")
+      .eq("parent_id", typedProfile.id);
 
-  const roomRows = (rooms ?? []) as RoomRow[];
-  const currentRoom = roomRows[0] ?? null;
+    const roomNames = new Set<string>();
+    for (const row of (links ?? []) as unknown as ParentChildRoomRow[]) {
+      const child = getRelationOne(row.child);
+      const room = getRelationOne(child?.room ?? null);
+      if (room?.name) {
+        roomNames.add(room.name);
+        if (!currentRoomName) {
+          currentRoomName = room.name;
+        }
+      }
+    }
+
+    if (roomNames.size === 1) {
+      // Keep room label; id not needed for parent feed filtering.
+      currentRoomId = null;
+    } else if (roomNames.size > 1) {
+      currentRoomName = "Mis hijos";
+      currentRoomId = null;
+    } else {
+      currentRoomName = null;
+      currentRoomId = null;
+    }
+  } else {
+    const { data: rooms } = await supabase
+      .from("rooms")
+      .select("id, name")
+      .eq("daycare_id", typedProfile.daycare_id)
+      .order("name", { ascending: true });
+
+    const roomRows = (rooms ?? []) as RoomRow[];
+    const currentRoom = roomRows[0] ?? null;
+    currentRoomId = currentRoom?.id ?? null;
+    currentRoomName = currentRoom?.name ?? null;
+  }
 
   return {
     userId: typedProfile.id,
@@ -72,7 +118,7 @@ export async function getCurrentUserContext(): Promise<CurrentUserContext | null
     fullName: typedProfile.full_name ?? "Usuario",
     daycareId: typedProfile.daycare_id,
     daycareName: getDaycareName(typedProfile.daycare),
-    currentRoomId: currentRoom?.id ?? null,
-    currentRoomName: currentRoom?.name ?? null,
+    currentRoomId,
+    currentRoomName,
   };
 }

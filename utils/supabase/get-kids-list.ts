@@ -18,6 +18,13 @@ type KidListQueryRow = {
     | null;
 };
 
+type ParentChildListRow = {
+  child:
+    | KidListQueryRow
+    | KidListQueryRow[]
+    | null;
+};
+
 function normalizeSearchText(value: string): string {
   return value
     .normalize("NFD")
@@ -39,24 +46,74 @@ function getRoomName(
   return room.name;
 }
 
+function getRelationOne<T>(value: T | T[] | null): T | null {
+  if (!value) return null;
+  return Array.isArray(value) ? value[0] ?? null : value;
+}
+
+async function getCurrentUserRoleAndId(
+  supabase: ReturnType<typeof createClient>,
+): Promise<{ userId: string; role: "admin" | "staff" | "parent" } | null> {
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+
+  if (!authUser) {
+    return null;
+  }
+
+  const { data: profile } = await supabase
+    .from("users")
+    .select("id, role")
+    .eq("id", authUser.id)
+    .maybeSingle();
+
+  if (!profile || !profile.role) {
+    return null;
+  }
+
+  const role = profile.role as "admin" | "staff" | "parent";
+  return { userId: profile.id as string, role };
+}
+
 export async function getKidsList(query?: string): Promise<KidListRow[]> {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
+  const current = await getCurrentUserRoleAndId(supabase);
 
-  const { data, error } = await supabase
-    .from("children")
-    .select("id, full_name, birth_date, room:rooms!inner(name)")
-    .eq("status", "active")
-    .not("room_id", "is", null)
-    .order("full_name", { ascending: true });
+  let rows: KidListQueryRow[] = [];
 
-  if (error) {
-    throw error;
+  if (current?.role === "parent") {
+    const { data, error } = await supabase
+      .from("parent_children")
+      .select(
+        "child:children(id, full_name, birth_date, room:rooms(name))",
+      )
+      .eq("parent_id", current.userId);
+
+    if (error) {
+      throw error;
+    }
+
+    rows = ((data ?? []) as unknown as ParentChildListRow[])
+      .map((row) => getRelationOne(row.child))
+      .filter((child): child is KidListQueryRow => Boolean(child));
+  } else {
+    const { data, error } = await supabase
+      .from("children")
+      .select("id, full_name, birth_date, room:rooms!inner(name)")
+      .eq("status", "active")
+      .not("room_id", "is", null)
+      .order("full_name", { ascending: true });
+
+    if (error) {
+      throw error;
+    }
+
+    rows = (data ?? []) as KidListQueryRow[];
   }
 
-  const rows = (data ?? []) as KidListQueryRow[];
   const normalizedQuery = normalizeSearchText(query?.trim() ?? "");
-
   const filteredRows =
     normalizedQuery.length === 0
       ? rows

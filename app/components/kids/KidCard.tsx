@@ -6,12 +6,13 @@ import type { KidListItem } from "./kids-data";
 
 type KidCardProps = {
   kid: KidListItem;
+  href?: string;
 };
 
-export function KidCard({ kid }: KidCardProps) {
+export function KidCard({ kid, href }: KidCardProps) {
   return (
     <Link
-      href={`/kids/${kid.id}`}
+      href={href ?? `/kids/${kid.id}`}
       className="group flex min-w-0 items-center gap-3.5 rounded-[18px] border border-[#ECE0D0] bg-[#FFFDF9] p-4 shadow-[0_4px_14px_-12px_rgba(120,90,60,0.5)] transition duration-150 hover:-translate-y-[2px] hover:border-[#F2A78E]"
     >
       <Avatar
